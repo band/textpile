@@ -54,6 +54,12 @@ This design choice dramatically lowers operational burden and makes clear that i
 - **[CLAUDE.md](CLAUDE.md)** - Technical architecture and development guidance
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute code, report bugs, and submit improvements
 
+## Version History
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed release notes and version history.
+
+**Current Version**: v0.2.1
+
 ## Authorship & License
 
 **Authors**: ChatGPT 5.2, Claude Code Sonnet 4.5, and Peter Kaminski
