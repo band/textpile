@@ -7,7 +7,7 @@ a:hover { text-decoration: underline; }
 .card { border: 1px solid rgba(127,127,127,.35); border-radius: 12px; padding: 14px 16px; margin: 12px 0; }
 .meta { opacity: .75; font-size: 13px; margin-top: 6px; }
 .small { font-size: 13px; opacity: .8; }
-textarea, input { width: 100%; box-sizing: border-box; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(127,127,127,.35); background: transparent; }
+textarea, input, select { width: 100%; box-sizing: border-box; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(127,127,127,.35); background: transparent; }
 textarea { min-height: 260px; }
 button { font: inherit; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(127,127,127,.35); background: rgba(127,127,127,.12); cursor: pointer; }
 button:hover { background: rgba(127,127,127,.18); }

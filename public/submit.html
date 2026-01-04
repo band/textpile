@@ -24,8 +24,23 @@
 
       <label>
         Body (required)
-        <textarea id="body" name="body" placeholder="Paste Markdown or plain text here"></textarea>
+        <textarea id="body" name="body" placeholder="Paste Markdown or plain text here" required></textarea>
       </label>
+
+      <label>
+        Retention period (required)
+        <select id="expiry" name="expiry" required>
+          <option value="1week">1 week</option>
+          <option value="1month" selected>1 month (default)</option>
+          <option value="3months">3 months</option>
+          <option value="6months">6 months</option>
+          <option value="1year">1 year</option>
+        </select>
+      </label>
+
+      <p class="small">
+        <strong>Important:</strong> Posts expire automatically after the selected period. Textpile does not back up content. Keep your own copy!
+      </p>
 
       <div class="actions">
         <button type="submit" id="btn">Publish</button>
@@ -54,14 +69,27 @@
         btn.disabled = true;
 
         const title = document.getElementById("title").value.trim();
-        const body = document.getElementById("body").value;
+        const body = document.getElementById("body").value.trim();
+        const expiry = document.getElementById("expiry").value;
         const token = document.getElementById("token").value.trim();
+
+        // Client-side validation
+        if (!body) {
+          msg.textContent = "Body is required.";
+          btn.disabled = false;
+          return;
+        }
 
         try {
           const res = await fetch("/api/submit", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ title: title || null, body, token: token || null })
+            body: JSON.stringify({
+              title: title || null,
+              body,
+              expiry,
+              token: token || null
+            })
           });
 
           const data = await res.json().catch(() => ({}));

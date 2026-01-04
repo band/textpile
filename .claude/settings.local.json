@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial Textpile implementation\n\n- Cloudflare Pages + Functions + KV architecture\n- Public HTML/CSS files for TOC and submit form\n- API endpoints for index, submit, and remove\n- Post rendering with client-side Markdown\n- Non-attributed posting with auto-expiration support\n- Comprehensive documentation \\(README, User''s Guide, Installation\\)\n- MIT License\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial Textpile implementation\n\n- Cloudflare Pages + Functions + KV architecture\n- Public HTML/CSS files for TOC and submit form\n- API endpoints for index, submit, and remove\n- Post rendering with client-side Markdown\n- Non-attributed posting with auto-expiration support\n- Comprehensive documentation \\(README, User''s Guide, Installation\\)\n- MIT License\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git tag:*)"
     ]
   }
 }

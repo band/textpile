@@ -128,6 +128,77 @@ wrangler pages dev public/ --kv=KV
 - HTML escaping required in all user-generated content displays
 - Admin takedown requires `ADMIN_TOKEN` in request body
 - Optional `SUBMIT_TOKEN` prevents open spam submissions
+- Timing-safe token comparison prevents timing attacks on tokens
+
+## Known Limitations
+
+### Race Condition in Index Updates
+
+The index update operation in `functions/api/submit.js` follows a read-modify-write pattern that is susceptible to race conditions if multiple posts are submitted simultaneously. This is documented in the code and is an acceptable trade-off for low-traffic sites:
+
+```javascript
+// Read
+const rawIndex = await env.KV.get("index");
+const index = rawIndex ? JSON.parse(rawIndex) : [];
+
+// Modify
+const entry = { id, title, createdAt, expiresAt, url };
+const next = [entry, ...index].slice(0, 1000);
+
+// Write
+await env.KV.put("index", JSON.stringify(next));
+```
+
+**Impact**: If two posts are submitted at exactly the same time, one entry might be lost from the index. The post itself is still stored and accessible via direct URL.
+
+**Mitigation options** (if needed for high-traffic sites):
+- Use Cloudflare Durable Objects for atomic operations
+- Implement optimistic locking with version numbers
+- Accept eventual consistency (current approach)
+
+### CORS (Cross-Origin Resource Sharing)
+
+**Current state**: CORS headers are NOT configured.
+
+**Impact**: The API endpoints (`/api/index`, `/api/submit`, `/api/remove`) can only be accessed from:
+- The same origin (same domain)
+- Server-side requests (no origin header)
+
+**When CORS is needed**:
+- If you want to build a separate frontend on a different domain
+- If you want third-party applications to submit posts via API
+- If you want to embed Textpile content in other sites via JavaScript
+
+**How to add CORS** (if needed):
+
+Add headers to API responses in `functions/api/*.js`:
+
+```javascript
+return Response.json({ ... }, {
+  headers: {
+    "Access-Control-Allow-Origin": "*",  // or specific domain
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "cache-control": "no-store",
+  },
+});
+```
+
+And add OPTIONS handlers for preflight requests:
+
+```javascript
+export async function onRequestOptions() {
+  return new Response(null, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+```
+
+**Recommendation**: Only add CORS if specifically needed. Leaving it disabled provides defense-in-depth against certain attack vectors.
 
 ## Quick Takedown
 

@@ -40,9 +40,10 @@
         list.innerHTML = items.map(it => {
           const title = it.title ? escapeHtml(it.title) : "(untitled)";
           const created = it.createdAt ? new Date(it.createdAt).toLocaleString() : "";
+          const url = it.url ? escapeHtml(it.url) : "#";
           return `
             <div class="card">
-              <div><a href="${it.url}">${title}</a></div>
+              <div><a href="${url}">${title}</a></div>
               <div class="meta">${escapeHtml(created)} · ${escapeHtml(it.id)}</div>
             </div>
           `;

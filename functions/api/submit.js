@@ -3,8 +3,8 @@ function nowIso() {
 }
 
 function makeId() {
-  // Sortable-ish: YYYYMMDDTHHMMSSZ + random
-  const t = new Date().toISOString().replace(/[-:.]/g, "").replace("Z", "Z");
+  // Sortable: YYYYMMDDTHHMMSS + random suffix
+  const t = new Date().toISOString().replace(/[-:.Z]/g, "");
   const r = Math.random().toString(36).slice(2, 8);
   return `${t}-${r}`;
 }
@@ -14,6 +14,41 @@ function clampTitle(title) {
   const t = String(title).trim().slice(0, 140);
   return t.length ? t : null;
 }
+
+// Timing-safe string comparison to prevent timing attacks
+async function timingSafeEqual(a, b) {
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+
+  if (aBytes.length !== bBytes.length) {
+    return false;
+  }
+
+  // Use crypto.subtle for constant-time comparison if available
+  if (crypto.subtle) {
+    const aKey = await crypto.subtle.importKey("raw", aBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const bKey = await crypto.subtle.importKey("raw", bBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const aHash = await crypto.subtle.sign("HMAC", aKey, new Uint8Array(1));
+    const bHash = await crypto.subtle.sign("HMAC", bKey, new Uint8Array(1));
+    return new Uint8Array(aHash).every((byte, i) => byte === new Uint8Array(bHash)[i]);
+  }
+
+  // Fallback: constant-time comparison
+  let result = 0;
+  for (let i = 0; i < aBytes.length; i++) {
+    result |= aBytes[i] ^ bBytes[i];
+  }
+  return result === 0;
+}
+
+// Map retention window names to seconds
+const EXPIRY_MAP = {
+  "1week": 7 * 24 * 60 * 60,
+  "1month": 30 * 24 * 60 * 60,
+  "3months": 90 * 24 * 60 * 60,
+  "6months": 180 * 24 * 60 * 60,
+  "1year": 365 * 24 * 60 * 60,
+};
 
 export async function onRequestPost({ request, env }) {
   let data;
@@ -27,7 +62,7 @@ export async function onRequestPost({ request, env }) {
   const required = env.SUBMIT_TOKEN;
   if (required) {
     const token = (data?.token ? String(data.token) : "").trim();
-    if (!token || token !== required) {
+    if (!token || !(await timingSafeEqual(token, required))) {
       return Response.json({ error: "Submit token required or invalid." }, { status: 403 });
     }
   }
@@ -37,23 +72,37 @@ export async function onRequestPost({ request, env }) {
     return Response.json({ error: "Body is required." }, { status: 400 });
   }
 
+  // Validate and get expiry period
+  const expiryKey = data?.expiry || "1month"; // Default to 1 month
+  const expirySeconds = EXPIRY_MAP[expiryKey];
+  if (!expirySeconds) {
+    return Response.json({ error: "Invalid expiry period. Must be one of: 1week, 1month, 3months, 6months, 1year." }, { status: 400 });
+  }
+
   // No author identity accepted/stored. Title only.
   const title = clampTitle(data?.title);
   const id = makeId();
   const createdAt = nowIso();
+  const expiresAt = new Date(Date.now() + expirySeconds * 1000).toISOString();
   const url = `/p/${encodeURIComponent(id)}`;
 
-  // Store post and metadata.
-  await env.KV.put(`post:${id}`, body, { metadata: { createdAt, title } });
+  // Store post with TTL and metadata
+  await env.KV.put(`post:${id}`, body, {
+    expirationTtl: expirySeconds,
+    metadata: { createdAt, title, expiresAt }
+  });
 
   // Update index (prepend newest). Cap for sanity.
+  // NOTE: Race condition possible if multiple posts submitted simultaneously.
+  // For low-traffic sites, this is acceptable. Index will eventually be consistent.
+  // If strict ordering is required, consider using Durable Objects or atomic operations.
   const rawIndex = await env.KV.get("index");
   const index = rawIndex ? JSON.parse(rawIndex) : [];
 
-  const entry = { id, title, createdAt, url };
+  const entry = { id, title, createdAt, expiresAt, url };
   const next = [entry, ...index].slice(0, 1000);
 
   await env.KV.put("index", JSON.stringify(next));
 
-  return Response.json({ id, url });
+  return Response.json({ success: true, id, url }, { status: 201 });
 }
