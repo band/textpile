@@ -38,11 +38,21 @@ This design choice dramatically lowers operational burden and makes clear that i
 - **Cloudflare KV**: Key-value storage with automatic TTL expiration
 - **marked.js**: Client-side Markdown rendering (CDN)
 
-## Quick Start
+## Documentation
 
-See [INSTALLATION.md](INSTALLATION.md) for detailed deployment instructions.
+### Getting Started
+- **[INSTALLATION.md](INSTALLATION.md)** - Step-by-step deployment guide for Cloudflare Pages
+- **[User's Guide.md](User's%20Guide.md)** - How to submit, read, and manage posts
 
-For usage information, see [User's Guide.md](User's%20Guide.md).
+### Understanding Textpile
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Plain-language explanation of how Textpile works, costs, implications, and what you're signing up for (recommended for all users and operators)
+
+### For Administrators
+- **[ADMIN-GUIDE.md](ADMIN-GUIDE.md)** - Spam prevention, rate limiting, Cloudflare Access, emergency procedures, and operational best practices
+
+### For Developers
+- **[CLAUDE.md](CLAUDE.md)** - Technical architecture and development guidance
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute code, report bugs, and submit improvements
 
 ## Authorship & License
 
