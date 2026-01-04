@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Submit · Textpile</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Submit</h1>
+      <div class="actions"><a href="/">TOC</a></div>
+    </header>
+
+    <p class="small">
+      Paste plain text or Markdown. This page does not collect author identity; keep attribution and context in your own records.
+    </p>
+
+    <form id="form" class="row">
+      <label>
+        Title (optional)
+        <input id="title" name="title" maxlength="140" placeholder="e.g. Analysis of recent developments" />
+      </label>
+
+      <label>
+        Body (required)
+        <textarea id="body" name="body" placeholder="Paste Markdown or plain text here"></textarea>
+      </label>
+
+      <div class="actions">
+        <button type="submit" id="btn">Publish</button>
+        <span id="msg" class="small"></span>
+      </div>
+
+      <hr />
+
+      <details>
+        <summary class="small">Optional: shared submit token</summary>
+        <p class="small">
+          If the site owner has enabled a submit token, paste it here. Otherwise leave blank.
+        </p>
+        <input id="token" name="token" placeholder="submit token (if required)" />
+      </details>
+    </form>
+
+    <script type="module">
+      const form = document.getElementById("form");
+      const msg = document.getElementById("msg");
+      const btn = document.getElementById("btn");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msg.textContent = "";
+        btn.disabled = true;
+
+        const title = document.getElementById("title").value.trim();
+        const body = document.getElementById("body").value;
+        const token = document.getElementById("token").value.trim();
+
+        try {
+          const res = await fetch("/api/submit", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ title: title || null, body, token: token || null })
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            throw new Error(data?.error || `Submit failed: ${res.status}`);
+          }
+
+          msg.textContent = "Published. Redirecting…";
+          window.location.href = data.url;
+        } catch (err) {
+          msg.textContent = String(err.message || err);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

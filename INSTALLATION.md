@@ -1,0 +1,213 @@
+# Textpile Installation Guide
+
+This guide walks through deploying Textpile on Cloudflare Pages with KV storage.
+
+## Prerequisites
+
+- GitHub account
+- Cloudflare account (free tier works fine)
+- Git installed locally (if deploying from local repository)
+
+## Deployment Steps
+
+### 1. Prepare Your Repository
+
+**Option A: Fork or clone this repository**
+```bash
+git clone https://github.com/YOUR_USERNAME/textpile.git
+cd textpile
+```
+
+**Option B: Already have this repository locally**
+- Ensure all files are committed
+- Push to GitHub if not already there
+
+### 2. Create a Cloudflare KV Namespace
+
+1. Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Navigate to **Workers & Pages** → **KV**
+3. Click **Create a namespace**
+4. Name it (e.g., `TEXTPILE_STORAGE` or `COMMUNITY_PASTES`)
+5. Click **Add**
+6. Note the namespace ID for later
+
+### 3. Create a Cloudflare Pages Project
+
+1. In Cloudflare Dashboard, go to **Workers & Pages**
+2. Click **Create application** → **Pages** → **Connect to Git**
+3. Authorize Cloudflare to access your GitHub account
+4. Select your Textpile repository
+5. Configure build settings:
+   - **Framework preset**: None
+   - **Build command**: *(leave blank)*
+   - **Build output directory**: `public`
+6. Click **Save and Deploy**
+
+### 4. Bind the KV Namespace
+
+1. In your Pages project, go to **Settings** → **Functions**
+2. Scroll to **KV namespace bindings**
+3. Click **Add binding**
+4. Configure:
+   - **Variable name**: `KV` (must be exactly this)
+   - **KV namespace**: Select the namespace you created in step 2
+5. Click **Save**
+
+### 5. Configure Environment Variables (Optional)
+
+Navigate to **Settings** → **Environment variables**
+
+#### Optional: Submit Token (Anti-Spam)
+
+To require a shared token for submissions:
+
+1. Click **Add variable**
+2. **Variable name**: `SUBMIT_TOKEN`
+3. **Value**: A secret string (e.g., generate with `openssl rand -hex 32`)
+4. **Environment**: Production (and Preview if desired)
+5. Click **Save**
+
+**Behavior:**
+- If set, users must provide this token when submitting
+- Share the token privately with your community members
+- If not set, submissions are open to everyone
+
+#### Optional: Admin Token (Quick Takedown)
+
+To enable the `/api/remove` endpoint:
+
+1. Click **Add variable**
+2. **Variable name**: `ADMIN_TOKEN`
+3. **Value**: A different secret string (e.g., generate with `openssl rand -hex 32`)
+4. **Environment**: Production
+5. Click **Save**
+
+**Usage:**
+```bash
+curl -X POST https://YOURDOMAIN/api/remove \
+  -H 'content-type: application/json' \
+  -d '{"id":"POST_ID","token":"YOUR_ADMIN_TOKEN"}'
+```
+
+### 6. Verify Deployment
+
+1. Wait for the deployment to complete (usually < 1 minute)
+2. Visit your Pages URL (e.g., `textpile.pages.dev`)
+3. You should see the Textpile home page
+4. Try submitting a test post via `/submit`
+5. Verify it appears on the home page and can be viewed
+
+## Local Development (Optional)
+
+To test Textpile locally before deploying:
+
+### Install Wrangler CLI
+
+```bash
+npm install -g wrangler
+```
+
+### Create Local KV Namespace
+
+```bash
+wrangler kv:namespace create KV --preview
+```
+
+### Run Development Server
+
+```bash
+wrangler pages dev public/ --kv=KV
+```
+
+This starts a local server (usually at `http://localhost:8788`) with KV bindings.
+
+### Test Local Environment Variables
+
+Create a `.dev.vars` file (automatically gitignored):
+
+```
+SUBMIT_TOKEN=your-test-token
+ADMIN_TOKEN=your-admin-token
+```
+
+Wrangler will automatically load these during local development.
+
+## Post-Installation Configuration
+
+### Custom Domain (Optional)
+
+1. In Pages project settings, go to **Custom domains**
+2. Click **Set up a custom domain**
+3. Enter your domain name
+4. Follow DNS configuration instructions
+5. Wait for SSL certificate provisioning (automatic)
+
+### Monitoring
+
+Cloudflare Pages provides built-in analytics:
+- **Analytics** tab shows traffic and requests
+- **Functions** tab shows function invocations and errors
+- **Logs** available via `wrangler pages deployment tail`
+
+## Troubleshooting
+
+### "KV is not defined" error
+
+- Verify the KV binding variable name is exactly `KV`
+- Ensure namespace is bound in Settings → Functions
+- Redeploy after adding the binding
+
+### Submit token not working
+
+- Check that `SUBMIT_TOKEN` is set in environment variables
+- Verify you're using Production environment variables
+- Redeploy after adding variables
+
+### Posts not appearing
+
+- Check browser console for JavaScript errors
+- Verify `/api/index` returns valid JSON
+- Check Cloudflare Pages Functions logs for errors
+
+### Local development not working
+
+- Ensure Wrangler is installed: `wrangler --version`
+- Create preview KV namespace: `wrangler kv:namespace create KV --preview`
+- Check `.dev.vars` file is in the project root
+
+## Updating Textpile
+
+To deploy updates:
+
+1. Pull latest changes from the repository
+2. Push to your GitHub repository
+3. Cloudflare Pages automatically redeploys
+
+Or manually trigger a deployment:
+- **Deployments** → **Create deployment** → select branch
+
+## Uninstallation
+
+To completely remove Textpile:
+
+1. Delete the Pages project (Settings → Delete project)
+2. Delete the KV namespace (Workers & Pages → KV → Delete)
+3. Remove custom domain DNS records if configured
+4. Optionally delete the GitHub repository
+
+**Note:** All content in KV will be permanently deleted.
+
+## Security Considerations
+
+- **Never commit** `.dev.vars` or actual tokens to git
+- Use strong random values for `SUBMIT_TOKEN` and `ADMIN_TOKEN`
+- Consider enabling Cloudflare Access for additional protection
+- Monitor Functions logs for suspicious activity
+- Set up rate limiting if spam becomes an issue (Cloudflare dashboard)
+
+## Support
+
+For issues or questions:
+- Check the [README.md](README.md) for project overview
+- Review the [User's Guide.md](User's%20Guide.md) for usage information
+- File issues on the GitHub repository

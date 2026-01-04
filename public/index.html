@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Textpile</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Textpile</h1>
+      <div class="actions">
+        <a href="/submit">Submit</a>
+      </div>
+    </header>
+
+    <p class="small">
+      Long-form posts for the community. No author attribution stored here; keep metadata in your own records.
+    </p>
+
+    <div id="status" class="small">Loading…</div>
+    <div id="list"></div>
+
+    <script type="module">
+      const status = document.getElementById("status");
+      const list = document.getElementById("list");
+
+      function escapeHtml(s) {
+        return s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+      }
+
+      try {
+        const res = await fetch("/api/index", { headers: { "accept": "application/json" }});
+        if (!res.ok) throw new Error(`Index fetch failed: ${res.status}`);
+        const data = await res.json();
+
+        const items = Array.isArray(data.items) ? data.items : [];
+        status.textContent = items.length ? `${items.length} posts` : "No posts yet.";
+
+        list.innerHTML = items.map(it => {
+          const title = it.title ? escapeHtml(it.title) : "(untitled)";
+          const created = it.createdAt ? new Date(it.createdAt).toLocaleString() : "";
+          return `
+            <div class="card">
+              <div><a href="${it.url}">${title}</a></div>
+              <div class="meta">${escapeHtml(created)} · ${escapeHtml(it.id)}</div>
+            </div>
+          `;
+        }).join("");
+      } catch (err) {
+        status.textContent = "Failed to load posts.";
+        list.innerHTML = `<pre>${String(err?.stack || err)}</pre>`;
+      }
+    </script>
+  </body>
+</html>
