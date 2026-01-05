@@ -121,6 +121,13 @@ export async function onRequestGet({ params, env }) {
   </header>
 
   <div class="meta">${escapeHtml(formattedDate)} · ${escapeHtml(id)}</div>
+
+  <div class="actions" style="margin: 12px 0;">
+    <button id="toggle-render-btn">View as plain text</button>
+    <button id="copy-btn">Copy text</button>
+    <span id="copy-msg" class="small"></span>
+  </div>
+
   <hr />
 
   <article id="content"></article>
@@ -128,7 +135,36 @@ export async function onRequestGet({ params, env }) {
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     const raw = ${JSON.stringify(body)};
-    document.getElementById("content").innerHTML = marked.parse(raw);
+    const content = document.getElementById("content");
+    let renderMode = "formatted";
+
+    function render() {
+      if (renderMode === "formatted") {
+        content.innerHTML = marked.parse(raw);
+        document.getElementById("toggle-render-btn").textContent = "View as plain text";
+      } else {
+        content.innerHTML = \`<pre style="white-space: pre-wrap;">\${raw}</pre>\`;
+        document.getElementById("toggle-render-btn").textContent = "View formatted";
+      }
+    }
+
+    render();
+
+    document.getElementById("toggle-render-btn").addEventListener("click", () => {
+      renderMode = renderMode === "formatted" ? "plain" : "formatted";
+      render();
+    });
+
+    document.getElementById("copy-btn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(raw);
+        const msg = document.getElementById("copy-msg");
+        msg.textContent = "Copied!";
+        setTimeout(() => msg.textContent = "", 2000);
+      } catch (err) {
+        alert("Failed to copy: " + err.message);
+      }
+    });
   </script>
 
   ${renderFooter(adminEmail)}

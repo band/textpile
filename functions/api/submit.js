@@ -81,6 +81,7 @@ export async function onRequestPost({ request, env }) {
 
   // No author identity accepted/stored. Title only.
   const title = clampTitle(data?.title);
+  const pinned = data?.pinned === true; // Only accept explicit true
   const id = makeId();
   const createdAt = nowIso();
   const expiresAt = new Date(Date.now() + expirySeconds * 1000).toISOString();
@@ -89,7 +90,7 @@ export async function onRequestPost({ request, env }) {
   // Store post with TTL and metadata
   await env.KV.put(`post:${id}`, body, {
     expirationTtl: expirySeconds,
-    metadata: { createdAt, title, expiresAt }
+    metadata: { createdAt, title, expiresAt, pinned }
   });
 
   // Update index (prepend newest). Cap for sanity.
@@ -99,10 +100,17 @@ export async function onRequestPost({ request, env }) {
   const rawIndex = await env.KV.get("index");
   const index = rawIndex ? JSON.parse(rawIndex) : [];
 
-  const entry = { id, title, createdAt, expiresAt, url };
-  const next = [entry, ...index].slice(0, 1000);
+  const entry = { id, title, createdAt, expiresAt, pinned, url };
 
-  await env.KV.put("index", JSON.stringify(next));
+  // Sort: pinned first, then by date
+  const next = [entry, ...index];
+  next.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  await env.KV.put("index", JSON.stringify(next.slice(0, 1000)));
 
   return Response.json({ success: true, id, url }, { status: 201 });
 }
