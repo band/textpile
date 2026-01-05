@@ -74,7 +74,7 @@ COMMUNITY_NAME=the Acme Research Team
 
 **Usage**: When set, footer displays:
 > **Textpile** · operated by [email]
-> Instance of Textpile 0.3.2
+> This site runs Textpile 0.4.0 · source
 
 **Example Values**:
 - `"admin@example.com"`

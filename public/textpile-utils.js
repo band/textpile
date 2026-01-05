@@ -82,7 +82,7 @@ export function addFooter() {
 
   let footerHTML = '<hr />';
 
-  // Footer format: "{instance_name} · operated by {email}\nInstance of Textpile {version}"
+  // Footer format: "{instance_name} · operated by {email}\nThis site runs Textpile {version} · source"
   footerHTML += `<strong>${escapeHtml(CONFIG.instanceName)}</strong>`;
 
   if (CONFIG.adminEmail) {
@@ -90,8 +90,8 @@ export function addFooter() {
   }
 
   footerHTML += '<br>';
-  footerHTML += 'Instance of ';
-  footerHTML += `<a href="https://github.com/peterkaminski/textpile">Textpile ${escapeHtml(CONFIG.textpileVersion)}</a>`;
+  footerHTML += 'This site runs ';
+  footerHTML += `Textpile ${escapeHtml(CONFIG.textpileVersion)} &middot; <a href="https://github.com/peterkaminski/textpile">source</a>`;
 
   footer.innerHTML = footerHTML;
   document.body.appendChild(footer);

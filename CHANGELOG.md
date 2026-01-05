@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-01-05
+
+### Changed
+
+- **Footer Text Update**
+  - Changed footer text from "Instance of Textpile {version}" to "This site runs Textpile {version} · source"
+  - Improved clarity and readability of footer attribution
+  - Updated documentation to reflect new footer format
+
 ## [0.4.0] - 2026-01-05
 
 ### ⚠️ BREAKING CHANGES
