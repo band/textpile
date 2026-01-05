@@ -27,18 +27,6 @@ function formatDateTime(dateString, dateFormat = "medium", timeFormat = "short")
   return `${datePart} ${timePart}`;
 }
 
-function renderFooter(adminEmail) {
-  if (!adminEmail) return "";
-  return `
-    <hr />
-    <footer class="site-footer">
-      <p class="small">
-        Questions? Contact <a href="mailto:${escapeHtml(adminEmail)}">${escapeHtml(adminEmail)}</a>
-      </p>
-    </footer>
-  `;
-}
-
 export async function onRequestGet({ params, env }) {
   const id = params.id;
 
@@ -58,7 +46,6 @@ export async function onRequestGet({ params, env }) {
   // Get config from env
   const dateFormat = env.DATE_FORMAT || "medium";
   const timeFormat = env.TIME_FORMAT || "short";
-  const adminEmail = env.ADMIN_EMAIL || null;
 
   // Check if post has expired
   if (expiresAt && new Date(expiresAt).getTime() <= Date.now()) {
@@ -88,7 +75,10 @@ export async function onRequestGet({ params, env }) {
     <p class="meta">Expired: ${escapeHtml(formattedExpiry)}</p>
   </div>
 
-  ${renderFooter(adminEmail)}
+  <script type="module">
+    import { initPage } from '/textpile-utils.js';
+    await initPage({ pageTitle: "Post Expired" });
+  </script>
 </body>
 </html>`;
 
@@ -125,6 +115,7 @@ export async function onRequestGet({ params, env }) {
   <div class="actions" style="margin: 12px 0;">
     <button id="toggle-render-btn">View as plain text</button>
     <button id="copy-btn">Copy text</button>
+    <button id="copy-url-btn">Copy URL</button>
     <span id="copy-msg" class="small"></span>
   </div>
 
@@ -133,6 +124,12 @@ export async function onRequestGet({ params, env }) {
   <article id="content"></article>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script type="module">
+    import { initPage } from '/textpile-utils.js';
+
+    // Initialize page with title
+    await initPage({ pageTitle: ${JSON.stringify(title || "Post")} });
+  </script>
   <script>
     const raw = ${JSON.stringify(body)};
     const content = document.getElementById("content");
@@ -165,9 +162,18 @@ export async function onRequestGet({ params, env }) {
         alert("Failed to copy: " + err.message);
       }
     });
-  </script>
 
-  ${renderFooter(adminEmail)}
+    document.getElementById("copy-url-btn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        const msg = document.getElementById("copy-msg");
+        msg.textContent = "URL copied!";
+        setTimeout(() => msg.textContent = "", 2000);
+      } catch (err) {
+        alert("Failed to copy URL: " + err.message);
+      }
+    });
+  </script>
 </body>
 </html>`;
 

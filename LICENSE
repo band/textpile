@@ -21,3 +21,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Use Notice (Non-binding)
+
+This notice is not a condition of the license.
+It describes the intended use and expectations of the maintainers.
+
+Textpile is intended to support small, bounded communities in sharing longer
+texts with minimal operational overhead.
+
+The software is provided without moderation features and without content
+retention guarantees. Operators and users are responsible for ensuring that
+their use of the software complies with applicable laws and ethical
+obligations.
+
+This software may not be used to knowingly facilitate illegal activity, to
+cause harm, or to evade legal or ethical responsibilities.
+
+Maintainers of this project do not assume responsibility for content published
+using Textpile instances and may discontinue maintenance of the software at
+any time.

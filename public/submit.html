@@ -13,7 +13,9 @@
     </header>
 
     <p class="small">
-      Paste plain text or Markdown. This page does not collect author identity; keep attribution and context in your own records.
+      Paste plain text or Markdown.<br>
+      No author identity is collected. IP addresses are logged. Posts expire automatically.<br>
+      <a href="/about">Important use notes →</a>
     </p>
 
     <form id="form" class="row">
@@ -62,8 +64,8 @@
     <script type="module">
       import { initPage, getConfig } from '/textpile-utils.js';
 
-      // Initialize page (load config, apply community name, add footer)
-      await initPage();
+      // Initialize page (load config, apply community name, update page title, add footer)
+      await initPage({ pageTitle: "Add Post" });
 
       // Set default retention from config
       const defaultRetention = getConfig('defaultRetention');

@@ -17,7 +17,9 @@
     </header>
 
     <p class="small">
-      Long-form posts for <span id="community-name">the community</span>. No author attribution stored here; keep metadata in your own records.
+      Long-form posts for <span id="community-name">the community</span>.<br>
+      Posts expire automatically; authors keep their own records.<br>
+      <a href="/about">Important use notes →</a>
     </p>
 
     <div id="status" class="small">Loading…</div>
@@ -33,8 +35,8 @@
         return s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
       }
 
-      // Initialize page (load config, apply community name, add footer)
-      await initPage();
+      // Initialize page (load config, apply community name, update H1, add footer)
+      await initPage({ updateH1: true });
 
       try {
         const res = await fetch("/api/index", { headers: { "accept": "application/json" }});

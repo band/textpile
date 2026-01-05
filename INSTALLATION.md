@@ -57,6 +57,10 @@ cd textpile
 
 Navigate to **Settings** → **Environment variables**
 
+**For complete configuration reference**, see **[CONFIGURATION.md](CONFIGURATION.md)** - comprehensive documentation of all environment variables with examples, defaults, and best practices.
+
+**Quick setup instructions** for the most common variables are below:
+
 #### Optional: Submit Token (Anti-Spam)
 
 To require a shared token for submissions:
