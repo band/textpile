@@ -7,6 +7,144 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-04
+
+### Added
+
+- **Admin Interface** (`/admin`)
+  - Web-based admin panel for post management
+  - Authentication via ADMIN_TOKEN (stored in localStorage)
+  - View all posts with metadata (ID, title, dates, pinned status, size)
+  - Delete individual or multiple posts with batch selection
+  - Pin/unpin posts to highlight at top of homepage
+  - Export all posts as JSONL format for backups
+  - Import posts from JSONL for migration or restoration
+  - Clear all posts with confirmation (nuclear option)
+  - Storage statistics dashboard with capacity warnings
+
+- **Admin API Endpoints**
+  - `GET /api/admin/posts` - List all posts with metadata
+  - `GET /api/admin/export` - Export posts as JSONL
+  - `POST /api/admin/import` - Import posts from JSONL
+  - `POST /api/admin/clear` - Delete all posts and reset index
+  - `GET /api/admin/stats` - Storage statistics and capacity monitoring
+  - All endpoints require ADMIN_TOKEN authentication
+
+- **RSS 2.0 Feed** (`/feed.xml`)
+  - RSS feed with last 50 active (non-expired) posts
+  - Automatic filtering of expired posts
+  - Includes title, link, publication date, GUID
+  - Community name in feed metadata
+  - Atom self-link for feed discovery
+  - Auto-discovery link in `<head>` of index.html
+  - 5-minute cache for performance
+  - Visible RSS link in homepage header
+
+- **Configuration System**
+  - `GET /api/config` - Public configuration endpoint
+  - `public/textpile-utils.js` - Shared client-side utility library
+  - Centralized configuration loading and formatting
+  - Community name replacement throughout site
+  - Dynamic footer with admin email contact
+  - Date/time formatting based on configuration
+
+- **Configuration Variables** (all optional)
+  - `COMMUNITY_NAME` - Customize community name (default: "the community")
+  - `ADMIN_EMAIL` - Contact email shown in footer (default: not shown)
+  - `DEFAULT_RETENTION` - Default retention window (default: "1month")
+  - `DATE_FORMAT` - Date display format: short, medium, long, full (default: "medium")
+  - `TIME_FORMAT` - Time display format: short, medium (default: "short")
+  - `MAX_POST_SIZE` - Maximum post size in bytes (default: 1048576 = 1 MB)
+  - `MAX_KV_SIZE` - Total storage target in bytes (default: 1048576000 = 1000 MB)
+
+- **Post Enhancement Features**
+  - **Toggle Markdown rendering**: Switch between formatted and plain text view
+  - **Copy post text**: Copy raw Markdown to clipboard
+  - **Pin posts**: Administrators can pin posts to top of homepage
+  - Pinned posts show 📌 icon in table of contents
+  - Pinned posts sorted first, then by date
+
+- **Size Validation**
+  - Client-side real-time size calculation as user types
+  - Visual feedback with color coding (green → yellow → red)
+  - Submit button disabled when over MAX_POST_SIZE
+  - Server-side enforcement with HTTP 413 response
+  - Clear error messages showing current size vs. limit
+  - Warning threshold at 750 KB (75% of default 1 MB limit)
+
+- **UI Improvements**
+  - Replaced "Submit" with "Add Post" throughout
+  - Replaced "TOC" with "Home" throughout
+  - Post IDs no longer include milliseconds (cleaner, more sortable)
+  - Enhanced post view with metadata display
+  - Better date/time formatting with configurable styles
+  - Footer component with optional admin email
+
+- **Documentation Enhancements**
+  - Comprehensive troubleshooting section in INSTALLATION.md
+  - Documented all new configuration variables
+  - Admin interface usage guide in ADMIN-GUIDE.md
+  - Storage management best practices in ADMIN-GUIDE.md
+  - RSS feed documentation in ADMIN-GUIDE.md and User's Guide.md
+  - Updated User's Guide with all new features
+
+### Changed
+
+- **Post ID format**: Removed milliseconds from IDs (YYYYMMDDTHHMMSS-random instead of YYYYMMDDTHHMMSSmmm-random)
+  - Cleaner, more human-readable IDs
+  - Still sortable and unique
+  - Functions/api/submit.js:7 - Changed `.slice(0, 19)` to `.slice(0, 15)`
+
+- **Index sorting**: Pinned posts always appear first
+  - Functions/api/submit.js and functions/api/index.js
+  - Sort order: pinned first (by date within pinned), then unpinned by date
+
+- **Post view enhancements** (functions/p/[id].js)
+  - Added toggle button for Markdown/plain text view
+  - Added copy text button with clipboard API
+  - Shows expiry date in metadata
+  - Navigation updated to "Add Post" and "Home"
+
+- **Homepage improvements** (public/index.html)
+  - Added RSS feed link in header
+  - Pinned posts show 📌 icon
+  - Uses formatDateTime from textpile-utils.js
+  - Community name dynamically loaded from config
+
+- **Submit form improvements** (public/submit.html)
+  - Real-time size validation with visual feedback
+  - Size display updates as user types
+  - Warning at 750 KB, error at 1 MB
+  - Submit button disabled when over limit
+  - Default retention period loaded from config
+
+### Fixed
+
+- Improved error messages throughout API endpoints
+- Better handling of edge cases in admin operations
+- Consistent response format across all endpoints
+
+### Security
+
+- All admin endpoints use timing-safe token comparison (from v0.2.0)
+- Storage statistics prevent information leakage
+- Import validation prevents malformed data injection
+
+### Documentation
+
+- Updated INSTALLATION.md with all new configuration variables
+- Updated ADMIN-GUIDE.md with admin interface, storage management, and RSS sections
+- Updated User's Guide.md with new features and UI changes
+- Updated README.md with v0.3.0 features and routes
+- All documentation cross-referenced and consistent
+
+### Notes
+
+- **No breaking changes**: All new features are backwards compatible
+- **No database migrations**: KV storage schema unchanged
+- **Optional features**: All new functionality is optional via configuration
+- Audit logging was planned but deferred to manage scope
+
 ## [0.2.1] - 2026-01-04
 
 ### Added
@@ -164,7 +302,8 @@ We follow [Semantic Versioning](https://semver.org/):
 
 **Note**: Dates use YYYY-MM-DD format (ISO 8601).
 
-[Unreleased]: https://github.com/peterkaminski/textpile/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/peterkaminski/textpile/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/peterkaminski/textpile/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/peterkaminski/textpile/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/peterkaminski/textpile/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/peterkaminski/textpile/releases/tag/v0.1.0

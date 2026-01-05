@@ -8,11 +8,14 @@ Textpile is a temporary reading surface for communities - not an archive. It's d
 
 **Key Features:**
 - **Non-attributed posting**: No author identity collected or stored
-- **Auto-expiring content**: Posts expire automatically based on user-selected retention windows
+- **Auto-expiring content**: Posts expire automatically based on user-selected retention windows (1 week to 1 year)
 - **Zero maintenance**: No databases, no builds, no cron jobs, no manual review
 - **Instant publishing**: Submit Markdown or plain text, get a URL immediately
 - **Optional access control**: Optional shared submit token to prevent spam
-- **Quick takedown**: Admin API for rapid content removal if needed
+- **Admin interface**: Web-based admin panel for post management, export/import, and storage monitoring
+- **RSS feed**: RSS 2.0 feed for following posts in your feed reader
+- **Pin posts**: Highlight important posts at the top of the homepage
+- **Customizable**: Configure community name, contact email, retention defaults, date/time formats, size limits
 
 ## Core Philosophy
 
@@ -24,12 +27,25 @@ This design choice dramatically lowers operational burden and makes clear that i
 
 ## Routes
 
-- `GET /` - Table of contents (latest posts)
+**Public Pages:**
+- `GET /` - Homepage with table of contents (latest posts)
 - `GET /submit` - Submission form
 - `GET /p/:id` - Individual post view
+- `GET /admin` - Admin interface (requires ADMIN_TOKEN)
+
+**API Endpoints:**
 - `GET /api/index` - JSON API for TOC
+- `GET /api/config` - Public configuration (community name, formats, defaults)
 - `POST /api/submit` - Publish endpoint
-- `POST /api/remove` - Admin removal endpoint (optional)
+- `POST /api/remove` - Admin removal endpoint (requires ADMIN_TOKEN)
+- `GET /api/admin/posts` - List all posts (requires ADMIN_TOKEN)
+- `GET /api/admin/export` - Export posts as JSONL (requires ADMIN_TOKEN)
+- `POST /api/admin/import` - Import posts from JSONL (requires ADMIN_TOKEN)
+- `POST /api/admin/clear` - Clear all posts (requires ADMIN_TOKEN)
+- `GET /api/admin/stats` - Storage statistics (requires ADMIN_TOKEN)
+
+**Feeds:**
+- `GET /feed.xml` - RSS 2.0 feed (last 50 active posts)
 
 ## Technology Stack
 
@@ -58,7 +74,7 @@ This design choice dramatically lowers operational burden and makes clear that i
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed release notes and version history.
 
-**Current Version**: v0.2.1
+**Current Version**: v0.3.0
 
 ## Authorship & License
 

@@ -72,9 +72,9 @@ To require a shared token for submissions:
 - Share the token privately with your community members
 - If not set, submissions are open to everyone
 
-#### Optional: Admin Token (Quick Takedown)
+#### Optional: Admin Token (Admin Interface & Quick Takedown)
 
-To enable the `/api/remove` endpoint:
+To enable the admin interface at `/admin` and `/api/remove` endpoint:
 
 1. Click **Add variable**
 2. **Variable name**: `ADMIN_TOKEN`
@@ -82,12 +82,101 @@ To enable the `/api/remove` endpoint:
 4. **Environment**: Production
 5. Click **Save**
 
-**Usage:**
+**Admin Interface:**
+- Visit `https://YOURDOMAIN/admin` to access the admin panel
+- Enter your ADMIN_TOKEN to authenticate
+- Manage posts, export/import data, view storage statistics
+
+**API Usage:**
 ```bash
 curl -X POST https://YOURDOMAIN/api/remove \
   -H 'content-type: application/json' \
   -d '{"id":"POST_ID","token":"YOUR_ADMIN_TOKEN"}'
 ```
+
+#### Optional: Community Name
+
+Customize the community name shown throughout the site:
+
+1. Click **Add variable**
+2. **Variable name**: `COMMUNITY_NAME`
+3. **Value**: Your community name (e.g., "Acme Research Team")
+4. **Environment**: Production
+5. Click **Save**
+
+**Default**: "the community"
+
+#### Optional: Admin Email
+
+Display a contact email in the footer of all pages:
+
+1. Click **Add variable**
+2. **Variable name**: `ADMIN_EMAIL`
+3. **Value**: Your contact email (e.g., "admin@example.com")
+4. **Environment**: Production
+5. Click **Save**
+
+**Default**: No footer shown (if not set)
+
+#### Optional: Default Retention Period
+
+Set the default retention window selected in the submit form:
+
+1. Click **Add variable**
+2. **Variable name**: `DEFAULT_RETENTION`
+3. **Value**: One of: `1week`, `1month`, `3months`, `6months`, `1year`
+4. **Environment**: Production
+5. Click **Save**
+
+**Default**: `1month`
+
+#### Optional: Date and Time Formatting
+
+Customize how dates and times are displayed:
+
+**Date Format:**
+1. Click **Add variable**
+2. **Variable name**: `DATE_FORMAT`
+3. **Value**: One of: `short`, `medium`, `long`, `full`
+4. **Environment**: Production
+5. Click **Save**
+
+**Examples:**
+- `short`: 1/4/26
+- `medium`: Jan 4, 2026 (default)
+- `long`: January 4, 2026
+- `full`: Saturday, January 4, 2026
+
+**Time Format:**
+1. Click **Add variable**
+2. **Variable name**: `TIME_FORMAT`
+3. **Value**: One of: `short`, `medium`
+4. **Environment**: Production
+5. Click **Save**
+
+**Examples:**
+- `short`: 1:23 PM (default, no seconds)
+- `medium`: 1:23:45 PM (with seconds)
+
+#### Optional: Size Limits
+
+Control maximum post and total storage sizes:
+
+**Maximum Post Size:**
+1. Click **Add variable**
+2. **Variable name**: `MAX_POST_SIZE`
+3. **Value**: Size in bytes (default: `1048576` = 1 MB)
+4. **Environment**: Production
+5. Click **Save**
+
+**Maximum KV Storage:**
+1. Click **Add variable**
+2. **Variable name**: `MAX_KV_SIZE`
+3. **Value**: Size in bytes (default: `1048576000` = 1000 MB)
+4. **Environment**: Production
+5. Click **Save**
+
+**Note**: The admin interface uses MAX_KV_SIZE to calculate storage usage and show warnings at 80% and 95% capacity.
 
 ### 6. Verify Deployment
 

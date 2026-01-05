@@ -4,12 +4,102 @@ This guide covers operational tasks for Textpile administrators, including spam 
 
 ## Table of Contents
 
+- [Admin Interface](#admin-interface)
 - [Spam Prevention](#spam-prevention)
 - [Access Control](#access-control)
 - [Rate Limiting](#rate-limiting)
 - [Emergency Procedures](#emergency-procedures)
 - [Monitoring and Maintenance](#monitoring-and-maintenance)
+- [Storage Management](#storage-management)
+- [RSS Feed](#rss-feed)
 - [Security Best Practices](#security-best-practices)
+
+---
+
+## Admin Interface
+
+Textpile v0.3.0+ includes a web-based admin interface for managing posts and viewing statistics.
+
+### Accessing the Admin Interface
+
+1. **Set ADMIN_TOKEN** environment variable (see [INSTALLATION.md](INSTALLATION.md))
+2. Visit `https://your-textpile.pages.dev/admin`
+3. Enter your ADMIN_TOKEN when prompted
+4. The token is stored in browser localStorage for convenience
+
+### Admin Features
+
+#### Post Management
+
+**View All Posts:**
+- Lists all posts with ID, title, creation date, and expiry date
+- Shows pinned status (📌 icon)
+- Displays post count and total storage estimate
+
+**Delete Posts:**
+- Select individual posts with checkboxes
+- Click "Delete Selected" to remove chosen posts
+- Confirmation dialog prevents accidental deletion
+- Posts are immediately removed from storage and index
+
+**Pin/Unpin Posts:**
+- Use the "Pin" checkbox for any post
+- Pinned posts appear at the top of the homepage
+- Useful for announcements or important content
+- Pinning updates both the post metadata and index
+
+#### Export Data
+
+**Export All Posts:**
+- Click "Export All Posts" button
+- Downloads a JSONL (JSON Lines) file
+- One post per line with all metadata
+- Includes: id, title, body, createdAt, expiresAt, pinned
+- Use for backups or migration to another instance
+
+**Example JSONL format:**
+```jsonl
+{"id":"20260104T123045-abc123","title":"Example Post","body":"# Content here","createdAt":"2026-01-04T12:30:45.000Z","expiresAt":"2026-02-04T12:30:45.000Z","pinned":false}
+{"id":"20260104T140000-def456","title":"Important Announcement","body":"Please note...","createdAt":"2026-01-04T14:00:00.000Z","expiresAt":"2027-01-04T14:00:00.000Z","pinned":true}
+```
+
+#### Import Data
+
+**Import Posts from JSONL:**
+1. Click "Choose File" under Import Posts
+2. Select a JSONL file (exported from this or another Textpile)
+3. Click "Import"
+4. System validates each post and stores it
+5. Index is automatically rebuilt
+6. Shows success message with import count
+
+**Important:**
+- Imported posts retain original expiry dates
+- If a post has already expired, it will be imported but immediately expire
+- Duplicate IDs will overwrite existing posts
+- Index is completely rebuilt from imported data
+
+#### Clear All Posts
+
+**Nuclear Option:**
+- Click "Clear All Posts" button
+- Confirmation dialog requires typing "DELETE" to proceed
+- Deletes ALL posts from KV storage
+- Resets index to empty array
+- **This action cannot be undone** - export first if needed!
+
+#### Storage Statistics
+
+**Dashboard shows:**
+- Total number of posts
+- Estimated total storage used (in MB)
+- Percentage of MAX_KV_SIZE limit
+- Warning indicators:
+  - Yellow warning at 80% capacity
+  - Red alert at 95% capacity
+- Breakdown by individual post sizes
+
+**Note**: Storage calculations are estimates based on JSON serialization of posts and metadata.
 
 ---
 
@@ -345,6 +435,179 @@ index.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
 await env.KV.put("index", JSON.stringify(index));
 ```
+
+---
+
+## Storage Management
+
+### Understanding Storage Limits
+
+**Cloudflare KV Free Tier:**
+- 1 GB total storage
+- 25 MiB per individual value
+- 1,000 writes/day
+- 100,000 reads/day
+
+**Textpile Defaults:**
+- `MAX_POST_SIZE`: 1 MB per post
+- `MAX_KV_SIZE`: 1000 MB total storage target
+
+### Monitoring Storage Usage
+
+**Via Admin Interface:**
+1. Visit `/admin`
+2. Storage statistics show:
+   - Total posts count
+   - Estimated total storage (MB)
+   - Percentage of MAX_KV_SIZE
+   - Warning at 80% (yellow)
+   - Alert at 95% (red)
+
+**Via Wrangler CLI:**
+```bash
+# List all keys
+wrangler kv:key list --binding=KV
+
+# Count posts
+wrangler kv:key list --binding=KV --prefix="post:" | jq '. | length'
+
+# Get approximate storage size (not exact, but useful)
+wrangler kv:key list --binding=KV | jq '[.[].metadata.size] | add'
+```
+
+### What to Do When Approaching Limits
+
+**At 80% Capacity (Warning):**
+- Review post retention periods (consider shorter defaults)
+- Export important posts for external archival
+- Communicate with users about storage constraints
+- Consider deleting expired posts manually (though they should auto-expire)
+
+**At 95% Capacity (Critical):**
+- **Immediate actions:**
+  1. Disable new submissions (remove or change SUBMIT_TOKEN)
+  2. Export all posts via admin interface
+  3. Manually delete old or large posts
+  4. Reduce retention windows for new posts
+
+- **Medium-term solutions:**
+  - Reduce `MAX_POST_SIZE` to enforce smaller posts
+  - Lower `DEFAULT_RETENTION` to expire posts faster
+  - Consider upgrading to Workers Paid ($5/month) for more storage
+
+**Emergency: Exceeded 100% (Storage Full):**
+- KV writes will start failing
+- Submit API will return errors
+- Use admin "Clear All Posts" if necessary (after exporting!)
+- Or selectively delete posts via admin interface
+
+### Storage Optimization Tips
+
+**Reduce Storage Usage:**
+1. **Shorter retention periods**: Default to `1week` instead of `1month`
+2. **Smaller post size limit**: Lower `MAX_POST_SIZE` to 512 KB or 256 KB
+3. **Reduce index cap**: In submit.js, change from 1000 to 500 posts
+4. **Regular exports**: Export and delete old posts periodically
+
+**Estimate Post Size:**
+- Plain text: ~1 KB per 1000 characters
+- Markdown with formatting: ~1.5 KB per 1000 characters
+- Metadata overhead: ~200 bytes per post
+- Index entry: ~150 bytes per post
+
+**Example Capacity:**
+- 1000 MB storage ÷ 10 KB average post = ~100,000 posts
+- But with 1 month retention, turnover keeps it manageable
+- Typical small community: 50-200 active posts at any time
+
+### Manual Cleanup Scripts
+
+**Remove all expired posts** (shouldn't be needed with TTL, but useful if index is stale):
+
+```bash
+# Get all posts
+wrangler kv:key list --binding=KV --prefix="post:" > posts.json
+
+# Filter expired (requires jq and manual scripting)
+# Delete individually via wrangler or admin interface
+```
+
+**Rebuild index from scratch** (if corrupted or stale):
+
+Use the admin interface "Export" then "Clear All" then "Import" to rebuild cleanly.
+
+---
+
+## RSS Feed
+
+Textpile v0.3.0+ includes an RSS 2.0 feed for recent posts.
+
+### Accessing the Feed
+
+**Feed URL:** `https://your-textpile.pages.dev/feed.xml`
+
+**What's Included:**
+- Last 50 active (non-expired) posts
+- Post title, link, publication date, GUID
+- Community name in feed metadata
+- Atom self-link for feed discovery
+
+### Feed Features
+
+**Automatic Filtering:**
+- Expired posts are automatically excluded
+- Only active posts appear in feed
+- Sorted by creation date (newest first)
+
+**Metadata:**
+- Feed title: "Textpile - {COMMUNITY_NAME}"
+- Feed description: "Long-form posts for {COMMUNITY_NAME}"
+- Last build date updated on each request
+- Language: en-us
+
+**Caching:**
+- Feed is cached for 5 minutes (Cache-Control header)
+- Reduces load on KV storage
+- Balance between freshness and performance
+
+### Feed Discovery
+
+**Auto-discovery link** is included in `index.html`:
+```html
+<link rel="alternate" type="application/rss+xml" title="Textpile RSS Feed" href="/feed.xml" />
+```
+
+Modern browsers and feed readers will auto-detect the feed when visiting the homepage.
+
+### User Instructions
+
+**For readers who want to follow via RSS:**
+1. Copy feed URL: `https://your-textpile.pages.dev/feed.xml`
+2. Add to feed reader (Feedly, NewsBlur, NetNewsWire, etc.)
+3. New posts appear automatically
+
+**Note to users:**
+- RSS feed only shows active posts
+- Expired posts disappear from feed
+- Feed readers may cache entries, so expired posts might linger briefly
+- Consider feed as a "what's currently available" view, not an archive
+
+### Customization
+
+**Change feed size** (default: 50 posts):
+Edit `functions/feed.xml.js`:
+```javascript
+const recentItems = activeItems.slice(0, 50); // Change to desired number
+```
+
+**Change cache duration** (default: 5 minutes):
+Edit `functions/feed.xml.js`:
+```javascript
+"Cache-Control": "public, max-age=300", // 300 seconds = 5 minutes
+```
+
+**Add custom feed metadata:**
+You can extend the RSS channel with additional fields like `<managingEditor>`, `<webMaster>`, `<category>`, etc. See [RSS 2.0 spec](https://www.rssboard.org/rss-specification) for options.
 
 ---
 

@@ -4,12 +4,13 @@
 
 ### How to Submit a Post
 
-1. Navigate to the `/submit` page on your Textpile instance
+1. Click the "Add Post" link on the homepage
 2. Enter an optional title (max 140 characters)
-3. Paste your content in Markdown or plain text
-4. If required, enter the shared submit token
-5. Click "Publish"
-6. You'll be redirected to your published post
+3. Paste your content in Markdown or plain text (max 1 MB by default)
+4. Select a retention period (how long before the post expires)
+5. If required, enter the shared submit token
+6. Click "Publish"
+7. You'll be redirected to your published post
 
 ### Important Notes for Authors
 
@@ -72,18 +73,35 @@ When your post expires:
 
 ### Browsing Posts
 
-The main page (`/`) displays the table of contents:
-- Posts are listed newest first
+The homepage displays the table of contents:
+- Posts are listed with pinned posts first, then newest to oldest
+- 📌 icon indicates pinned posts (announcements, important content)
 - Each entry shows: title (or "untitled"), creation date, and post ID
 - Click any title to read the full post
+- Click "RSS" link to subscribe to the RSS feed
 
 ### Reading a Post
 
 Individual posts (`/p/:id`) display:
-- Title
-- Creation timestamp
-- Post ID
+- Title and metadata (creation date, post ID, expiry date)
 - Full Markdown-rendered content
+- **View toggle button**: Switch between formatted Markdown and plain text
+- **Copy text button**: Copy the raw Markdown to your clipboard
+- Navigation links: "Add Post" to submit new content, "Home" to return to homepage
+
+**Post View Features:**
+
+**Toggle Markdown Rendering:**
+- Default: Post displays with Markdown formatting (headings, bold, links, etc.)
+- Click "View as plain text" to see raw Markdown source
+- Click "View formatted" to return to rendered view
+- Useful for copying formatted content or troubleshooting rendering
+
+**Copy Post Text:**
+- Click "Copy text" button to copy raw Markdown to clipboard
+- Shows "Copied!" confirmation message
+- Great for saving your own posts or quoting content
+- **Remember**: Always keep your own copies! Textpile doesn't back up content.
 
 ### Expired Content
 
@@ -91,6 +109,27 @@ If you visit a URL for an expired post, you'll see:
 - **410 Gone** status (not 404)
 - A message explaining the content has expired
 - Reminder that Textpile doesn't retain backups
+
+## Following via RSS
+
+Textpile provides an RSS 2.0 feed for following new posts in your feed reader.
+
+**How to Subscribe:**
+1. Copy the feed URL: `https://your-textpile.pages.dev/feed.xml`
+2. Add it to your RSS feed reader (Feedly, NewsBlur, NetNewsWire, Inoreader, etc.)
+3. New posts will appear automatically in your reader
+
+**What the RSS feed includes:**
+- Last 50 active (non-expired) posts
+- Post titles, links, and publication dates
+- Automatically excludes expired posts
+- Updated every 5 minutes
+
+**Feed Discovery:**
+- Modern browsers auto-detect the RSS feed when you visit the homepage
+- Look for the RSS icon in your browser's address bar
+
+**Note:** Expired posts disappear from the feed. Your feed reader may cache entries briefly, so recently expired posts might linger for a short time.
 
 ## For Administrators
 
@@ -105,9 +144,26 @@ If `SUBMIT_TOKEN` is not set:
 - Anyone can submit posts
 - Useful for fully open communities or internal networks
 
-### Quick Takedown
+### Admin Interface
 
-If `ADMIN_TOKEN` is configured, you can remove posts via API:
+If `ADMIN_TOKEN` is configured, you can manage posts via the admin interface:
+
+**Access:** Visit `https://YOURDOMAIN/admin`
+
+**Features:**
+- View all posts with metadata
+- Delete individual or multiple posts
+- Pin/unpin posts (pinned posts appear at top of homepage)
+- Export all posts as JSONL (for backups)
+- Import posts from JSONL (for migration or restoration)
+- Clear all posts (nuclear option)
+- View storage statistics and capacity warnings
+
+See [ADMIN-GUIDE.md](ADMIN-GUIDE.md) for detailed admin documentation.
+
+### Quick Takedown via API
+
+You can also remove posts directly via API:
 
 ```bash
 curl -X POST https://YOURDOMAIN/api/remove \
@@ -120,13 +176,32 @@ This immediately:
 - Removes it from the table of contents
 - Makes the URL return 404
 
+### Pinned Posts
+
+Administrators can pin important posts to keep them at the top of the homepage:
+
+**Via Admin Interface:**
+1. Visit `/admin`
+2. Check the "Pin" checkbox next to any post
+3. Pinned posts display with a 📌 icon
+4. Pinned posts always appear above unpinned posts, regardless of date
+
+**Use cases for pinning:**
+- Community announcements
+- Guidelines or rules
+- Important reference documents
+- Urgent notices
+
+**Note:** Pinned posts still expire normally according to their retention period.
+
 ### Maintenance Expectations
 
 **Textpile is designed to require zero ongoing maintenance:**
-- No database backups needed
+- No database backups needed (but export feature available)
 - No manual content moderation required
 - No sweeper jobs or cron tasks
 - KV handles expiration automatically
+- Admin interface for occasional management
 
 **If maintenance becomes burdensome:**
 - It's socially acceptable to shut down Textpile
