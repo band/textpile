@@ -9,12 +9,14 @@
   </head>
   <body>
     <header>
-      <h1>Textpile</h1>
+      <a id="instance-name" class="instance-name" href="/">Textpile</a>
       <div class="actions">
         <a href="/submit">Add Post</a>
         <a href="/feed.xml" title="RSS Feed">RSS</a>
       </div>
     </header>
+
+    <h1>Posts</h1>
 
     <p class="small">
       Long-form posts for <span id="community-name">the community</span>.<br>
@@ -35,8 +37,8 @@
         return s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
       }
 
-      // Initialize page (load config, apply community name, update H1, add footer)
-      await initPage({ updateH1: true });
+      // Initialize page (load config, apply community name, update page title, add footer)
+      await initPage({ pageTitle: "Posts" });
 
       try {
         const res = await fetch("/api/index", { headers: { "accept": "application/json" }});

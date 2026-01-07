@@ -23,12 +23,14 @@
   </head>
   <body>
     <header>
-      <h1>Admin Panel</h1>
+      <a id="instance-name" class="instance-name" href="/">Textpile</a>
       <div class="actions">
         <a href="/">Home</a>
         <a href="/submit">Add Post</a>
       </div>
     </header>
+
+    <h1>Admin Panel</h1>
 
     <div id="login-section">
       <div class="admin-section">
@@ -80,9 +82,11 @@
     </div>
 
     <script type="module">
-      import { formatDateTime } from '/textpile-utils.js';
+      import { formatDateTime, initPage } from '/textpile-utils.js';
 
       let TOKEN = "";
+
+      await initPage({ pageTitle: "Admin" });
 
       document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
