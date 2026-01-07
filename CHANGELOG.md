@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-01-06
+
+### Added
+
+- **Pin/Unpin Functionality**
+  - Added `/api/admin/pin` endpoint for toggling post pin status
+  - Added Pin/Unpin buttons in admin panel post table
+  - Posts can now be pinned/unpinned through the admin interface
+  - Pinned posts automatically appear first in the homepage listing
+  - Pin button dynamically shows "Pin" or "Unpin" based on current state
+
+### Changed
+
+- **Navigation Improvements**
+  - Added "About" link to navigation on all pages (except about page itself)
+  - Added middot (·) separators between navigation links for better visual distinction
+  - Separator styling: `opacity: 0.6`, `margin: 0 0.4em`, `aria-hidden="true"`
+  - Updated `.actions` CSS: reduced gap from 10px to 0 (separators handle spacing)
+
+- **Navigation Link Order**
+  - Home page: About · Add Post · RSS
+  - Submit page: Home · About
+  - Admin page: Home · About · Add Post
+  - Post pages: Home · About · Add Post
+  - About page: Home (no changes)
+
+Files changed: 6 (public/index.html, public/submit.html, public/admin.html, functions/p/[id].js, public/style.css, functions/api/admin/pin.js)
+
 ## [0.4.2] - 2026-01-06
 
 ### Changed

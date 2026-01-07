@@ -40,6 +40,9 @@ export async function onRequestGet({ params, env }) {
     <a id="instance-name" class="instance-name" href="/">Textpile</a>
     <div class="actions">
       <a href="/">Home</a>
+      <span class="separator" aria-hidden="true">&middot;</span>
+      <a href="/about">About</a>
+      <span class="separator" aria-hidden="true">&middot;</span>
       <a href="/submit">Add Post</a>
     </div>
   </header>
@@ -85,6 +88,9 @@ export async function onRequestGet({ params, env }) {
     <a id="instance-name" class="instance-name" href="/">Textpile</a>
     <div class="actions">
       <a href="/">Home</a>
+      <span class="separator" aria-hidden="true">&middot;</span>
+      <a href="/about">About</a>
+      <span class="separator" aria-hidden="true">&middot;</span>
       <a href="/submit">Add Post</a>
     </div>
   </header>

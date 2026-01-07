@@ -26,6 +26,9 @@
       <a id="instance-name" class="instance-name" href="/">Textpile</a>
       <div class="actions">
         <a href="/">Home</a>
+        <span class="separator" aria-hidden="true">&middot;</span>
+        <a href="/about">About</a>
+        <span class="separator" aria-hidden="true">&middot;</span>
         <a href="/submit">Add Post</a>
       </div>
     </header>
@@ -176,7 +179,10 @@
                     <td class="small">${formatDateTime(post.createdAt)}</td>
                     <td class="small">${post.expiresAt ? formatDateTime(post.expiresAt) : 'Never'}</td>
                     <td class="small">${(post.size / 1024).toFixed(1)} KB</td>
-                    <td><button class="delete-post-btn" data-id="${post.id}">Delete</button></td>
+                    <td>
+                      <button class="pin-post-btn" data-id="${post.id}" data-pinned="${post.pinned || false}">${post.pinned ? 'Unpin' : 'Pin'}</button>
+                      <button class="delete-post-btn" data-id="${post.id}">Delete</button>
+                    </td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -185,6 +191,15 @@
 
           document.getElementById("select-all").addEventListener("change", (e) => {
             document.querySelectorAll(".post-checkbox").forEach(cb => cb.checked = e.target.checked);
+          });
+
+          document.querySelectorAll(".pin-post-btn").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+              const id = e.target.dataset.id;
+              const isPinned = e.target.dataset.pinned === "true";
+              await togglePin(id, !isPinned);
+              loadPosts();
+            });
           });
 
           document.querySelectorAll(".delete-post-btn").forEach(btn => {
@@ -197,6 +212,18 @@
               }
             });
           });
+        }
+      }
+
+      async function togglePin(id, pinned) {
+        const res = await fetch("/api/admin/pin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, pinned, token: TOKEN })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert(`Failed to ${pinned ? 'pin' : 'unpin'} post: ${err.error || 'Unknown error'}`);
         }
       }
 
