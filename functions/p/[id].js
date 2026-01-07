@@ -37,12 +37,14 @@ export async function onRequestGet({ params, env }) {
 </head>
 <body>
   <header>
-    <h1>Post Expired</h1>
+    <a id="instance-name" class="instance-name" href="/">Textpile</a>
     <div class="actions">
       <a href="/">Home</a>
       <a href="/submit">Add Post</a>
     </div>
   </header>
+
+  <h1>Post Expired</h1>
 
   <div class="card">
     <h2>This Textpile item has expired.</h2>
@@ -80,12 +82,14 @@ export async function onRequestGet({ params, env }) {
 </head>
 <body>
   <header>
-    <h1>${escapeHtml(title || "(untitled)")}</h1>
+    <a id="instance-name" class="instance-name" href="/">Textpile</a>
     <div class="actions">
       <a href="/">Home</a>
       <a href="/submit">Add Post</a>
     </div>
   </header>
+
+  <h1>${escapeHtml(title || "(untitled)")}</h1>
 
   <div class="meta">${escapeHtml(formattedDate)} · ${escapeHtml(id)}</div>
 

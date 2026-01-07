@@ -67,11 +67,11 @@ export function updatePageTitle(pageTitle) {
   }
 }
 
-// Update H1 with instance name (for homepage)
-export function updateH1WithInstanceName() {
-  const h1 = document.querySelector("header h1");
-  if (h1 && h1.textContent === "Textpile") {
-    h1.textContent = CONFIG.instanceName;
+// Update instance identity link text
+export function updateInstanceName() {
+  const instanceLink = document.getElementById("instance-name");
+  if (instanceLink) {
+    instanceLink.textContent = CONFIG.instanceName;
   }
 }
 
@@ -106,16 +106,11 @@ function escapeHtml(s) {
 // Initialize page with config
 // Options:
 //   pageTitle: string - page title to append to instance name (e.g., "Add Post")
-//   updateH1: boolean - whether to update H1 with instance name (for homepage)
 export async function initPage(options = {}) {
   await loadConfig();
   applyCommunityName();
-
-  if (options.pageTitle) {
-    updatePageTitle(options.pageTitle);
-  } else if (options.updateH1) {
-    updateH1WithInstanceName();
-  }
+  updateInstanceName();
+  updatePageTitle(options.pageTitle);
 
   addFooter();
 }
