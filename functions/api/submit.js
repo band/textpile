@@ -1,12 +1,7 @@
+import { allocatePostIdKv } from '../lib/idAllocator.js';
+
 function nowIso() {
   return new Date().toISOString();
-}
-
-function makeId() {
-  // Sortable: YYYYMMDDTHHMMSS + random suffix (no milliseconds)
-  const t = new Date().toISOString().replace(/[-:.Z]/g, "").slice(0, 15); // Remove milliseconds
-  const r = Math.random().toString(36).slice(2, 8);
-  return `${t}-${r}`;
 }
 
 function clampTitle(title) {
@@ -93,16 +88,45 @@ export async function onRequestPost({ request, env }) {
   // No author identity accepted/stored. Title only.
   const title = clampTitle(data?.title);
   const pinned = data?.pinned === true; // Only accept explicit true
-  const id = makeId();
   const createdAt = nowIso();
   const expiresAt = new Date(Date.now() + expirySeconds * 1000).toISOString();
+
+  // Allocate unique ID using KV claim+verify protocol
+  let id, allocToken;
+  try {
+    const allocation = await allocatePostIdKv(env.KV);
+    id = allocation.id;
+    allocToken = allocation.allocToken;
+  } catch (err) {
+    console.error('ID allocation failed:', err.message);
+    return Response.json({
+      error: 'Failed to allocate post ID. Please try again.'
+    }, { status: 503 });
+  }
+
   const url = `/p/${encodeURIComponent(id)}`;
 
-  // Store post with TTL and metadata
+  // Store post with TTL and metadata (including allocToken for verification)
   await env.KV.put(`post:${id}`, body, {
     expirationTtl: expirySeconds,
-    metadata: { createdAt, title, expiresAt, pinned }
+    metadata: { createdAt, title, expiresAt, pinned, allocToken }
   });
+
+  // Verify post write (cache bypass)
+  const verifyResult = await env.KV.getWithMetadata(`post:${id}`, { cacheTtl: 0 });
+  if (!verifyResult.value || !verifyResult.metadata) {
+    console.error('Post write verification failed: post not found');
+    return Response.json({
+      error: 'Failed to create post. Please try again.'
+    }, { status: 503 });
+  }
+
+  if (verifyResult.metadata.allocToken !== allocToken) {
+    console.error('Post write verification failed: allocToken mismatch');
+    return Response.json({
+      error: 'Failed to create post (race condition). Please try again.'
+    }, { status: 503 });
+  }
 
   // Update index (prepend newest). Cap for sanity.
   // NOTE: Race condition possible if multiple posts submitted simultaneously.

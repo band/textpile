@@ -7,6 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-01-08
+
+### ⚠️ BREAKING CHANGES
+
+**New Post ID Format (KV-only)**
+
+This release introduces a completely new ID format using KV-only allocation with claim+verify protocol.
+
+**Old format (v0.5.1):** `20260107T211418-k4j2n5` (22 characters, timestamp-based)
+
+**New format (v0.6.0):** `260108-bc` or `260108-bcf` (9-10 characters, day-based with random nonce)
+
+**Impact:**
+- No backwards compatibility needed (test instances only)
+- Old posts can be cleared before deploying (or left as-is, both formats work in URLs)
+- All new posts use the new format
+- Much shorter, more readable IDs
+
+**Migration:** Clear all existing posts before deploying if desired (instructions in POST-ID-V2-KV.md)
+
+### Added
+
+- **KV-Only ID Allocator**
+  - New `allocatePostIdKv()` function using claim+verify protocol
+  - Guaranteed uniqueness without Durable Objects
+  - Cryptographically secure random nonce generation
+  - Works on Cloudflare free plan
+
+- **Improved ID Format**
+  - Format: `YYMMDD-nonce` (e.g., `260108-bc` or `260108-bcf`)
+  - Consonant-only alphabet: `bcdfghjkmnpqrstvwxyz` (20 chars)
+  - Nonce lengths: 2 or 3 characters
+  - 9-10 characters total (vs 22 before)
+
+- **Claim+Verify Protocol**
+  - Uses `claim:<id>` keys with 60s TTL
+  - Prevents race conditions during allocation
+  - Verifies post write with allocToken
+  - Handles concurrent submissions safely
+
+- **Testing**
+  - Added unit tests for `formatDayUTC()` and `randomNonce()`
+  - Added ID format validation tests
+  - Test suite uses Vitest
+
+- **Documentation**
+  - Added POST-ID-V2-KV.md with comprehensive explanation
+  - Documented allocation protocol, capacity analysis
+  - Added troubleshooting guide
+
+### Changed
+
+- **Submit Endpoint** (`functions/api/submit.js`)
+  - Replaced `makeId()` with async `allocatePostIdKv()`
+  - Added allocToken to post metadata for write verification
+  - Better error handling for allocation failures (HTTP 503)
+  - ID generation now takes ~20-40ms (KV round-trips)
+
+- **Capacity**
+  - 2-char nonces: 400 IDs/day (10 attempts)
+  - 3-char nonces: 8,000 IDs/day (10 attempts)
+  - Total: 8,400 possible IDs/day with 20 attempts
+
+Files added:
+- functions/lib/idAllocator.js
+- functions/lib/idAllocator.test.js
+- POST-ID-V2-KV.md
+
+Files modified:
+- functions/api/submit.js
+- package.json (added vitest, test scripts)
+
+**See POST-ID-V2-KV.md for full details and implementation spec.**
+
 ## [0.5.1] - 2026-01-07
 
 ### Fixed
