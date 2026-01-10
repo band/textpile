@@ -27,7 +27,7 @@ export async function onRequestGet({ env, request }) {
   const url = new URL(request.url);
   const baseUrl = `${url.protocol}//${url.host}`;
 
-  const communityName = env.COMMUNITY_NAME || "the community";
+  const communityName = env.COMMUNITY_NAME || "COMMUNITY_NAME";
 
   const rssItems = recentItems.map(item => {
     const pubDate = item.createdAt ? new Date(item.createdAt).toUTCString() : new Date().toUTCString();
