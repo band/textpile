@@ -502,6 +502,8 @@ Textpile follows [Semantic Versioning](https://semver.org/):
 
 ### Release Process
 
+**Complete all steps.** Each step is required for a proper release.
+
 1. **Update version in source**
    ```bash
    # Edit public/version.js
@@ -536,15 +538,35 @@ Textpile follows [Semantic Versioning](https://semver.org/):
    git tag -a v0.7.0 -m "Release v0.7.0"
    ```
 
-5. **Push to GitHub**
+   **Important:** The git tag step is **required** - it marks the official release point in git history. Do not skip this step.
+
+5. **Push to GitHub** (with tags)
    ```bash
    git push origin main --tags
    ```
 
+   **Important:** Use `--tags` to push the release tag along with commits. Without this, the tag remains local only.
+
 6. **Verify deployment**
    - Check Cloudflare Pages deployment succeeds
    - Verify new version appears on production site
+   - Verify git tag exists: `git tag -l v0.7.0`
+   - Verify tag is on GitHub: Check releases page
    - Test critical functionality
+
+### Release Checklist
+
+Use this checklist when releasing:
+
+- [ ] Updated `public/version.js` with new version number
+- [ ] Ran `npm run update-version` successfully
+- [ ] Updated `CHANGELOG.md` with release notes
+- [ ] Committed changes with `Release vX.Y.Z` message
+- [ ] **Created git tag** with `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+- [ ] **Pushed with `--tags`** using `git push origin main --tags`
+- [ ] Verified tag exists on GitHub
+- [ ] Verified Cloudflare deployment succeeded
+- [ ] Tested production site
 
 ### Version Files
 
