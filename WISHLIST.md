@@ -240,6 +240,7 @@ FLAG_WINDOW_HOURS=24      # Time window for collecting flags
 - Consider requiring simple CAPTCHA for flagging
 - Log all flag actions for admin review
 - Admin interface to see flagged posts and flag history
+- **Require SUBMIT_TOKEN if set:** If `SUBMIT_TOKEN` environment variable is configured, flagging must also require the submit token (prevents open flagging on gated instances)
 
 **Privacy considerations:**
 - Store only hashed IP addresses, not full IPs
