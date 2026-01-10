@@ -489,6 +489,74 @@ We follow responsible disclosure:
 
 ---
 
+## Releasing a New Version
+
+**For maintainers only.** This section describes how to create a new release.
+
+### Version Numbering
+
+Textpile follows [Semantic Versioning](https://semver.org/):
+- **MAJOR** (X.0.0): Breaking changes
+- **MINOR** (0.X.0): New features (backwards compatible)
+- **PATCH** (0.0.X): Bug fixes
+
+### Release Process
+
+1. **Update version in source**
+   ```bash
+   # Edit public/version.js
+   export const TEXTPILE_VERSION = "0.7.0";
+   ```
+
+2. **Run version sync script**
+   ```bash
+   npm run update-version
+   ```
+
+   This updates:
+   - `README.md` - "Current Version" badge
+   - `CONFIGURATION.md` - Footer example
+   - `package.json` - Version field
+
+3. **Update CHANGELOG.md**
+   - Add new version section with date
+   - List all changes under appropriate categories:
+     - `### Added` - New features
+     - `### Changed` - Changes in existing functionality
+     - `### Deprecated` - Soon-to-be removed features
+     - `### Removed` - Removed features
+     - `### Fixed` - Bug fixes
+     - `### Security` - Security updates
+   - Note breaking changes prominently with `⚠️ BREAKING CHANGES`
+
+4. **Commit and tag**
+   ```bash
+   git add -A
+   git commit -m "Release v0.7.0"
+   git tag -a v0.7.0 -m "Release v0.7.0"
+   ```
+
+5. **Push to GitHub**
+   ```bash
+   git push origin main --tags
+   ```
+
+6. **Verify deployment**
+   - Check Cloudflare Pages deployment succeeds
+   - Verify new version appears on production site
+   - Test critical functionality
+
+### Version Files
+
+The version number appears in multiple places:
+- **Source of truth**: `public/version.js` (manually edited)
+- **Auto-updated**: `README.md`, `CONFIGURATION.md`, `package.json` (via script)
+- **Manual**: `CHANGELOG.md` (add release notes)
+
+**Always run `npm run update-version` after editing `public/version.js`.**
+
+---
+
 ## Questions?
 
 **General questions:**
