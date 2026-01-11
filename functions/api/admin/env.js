@@ -1,18 +1,5 @@
 // Admin endpoint: Get environment variables configuration
-async function timingSafeEqual(a, b) {
-  const aBytes = new TextEncoder().encode(a);
-  const bBytes = new TextEncoder().encode(b);
-  if (aBytes.length !== bBytes.length) return false;
-  const result = await crypto.subtle.digest("SHA-256", aBytes);
-  const result2 = await crypto.subtle.digest("SHA-256", bBytes);
-  const a32 = new Uint32Array(result);
-  const b32 = new Uint32Array(result2);
-  let diff = 0;
-  for (let i = 0; i < a32.length; i++) {
-    diff |= a32[i] ^ b32[i];
-  }
-  return diff === 0;
-}
+import { timingSafeEqual } from "../../lib/auth.js";
 
 export async function onRequestGet({ env, request }) {
   // Require admin authentication
