@@ -1,8 +1,6 @@
+// Render post detail page
 import { formatDateTime } from "../../public/date-formatter.js";
-
-function escapeHtml(s) {
-  return s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-}
+import { escapeHtml } from "../lib/escape.js";
 
 export async function onRequestGet({ params, env }) {
   const id = params.id;

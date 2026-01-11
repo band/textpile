@@ -1,13 +1,5 @@
 // RSS feed for recent posts
-function escapeXml(s) {
-  if (!s) return "";
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
+import { escapeXml } from "./lib/escape.js";
 
 export async function onRequestGet({ env, request }) {
   const rawIndex = await env.KV.get("index");
