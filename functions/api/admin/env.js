@@ -46,13 +46,13 @@ export async function onRequestGet({ env, request }) {
       variables: [
         {
           name: "ADD_POST_PASSWORD",
-          value: env.ADD_POST_PASSWORD ? "******** (set)" : "(unset)",
+          value: env.ADD_POST_PASSWORD || "(unset)",
           possibleValues: "Random string",
           description: "Shared password for adding posts"
         },
         {
           name: "ADMIN_TOKEN",
-          value: env.ADMIN_TOKEN ? "******** (set)" : "(unset)",
+          value: env.ADMIN_TOKEN || "(unset)",
           possibleValues: "Random string",
           description: "Admin access token"
         }
