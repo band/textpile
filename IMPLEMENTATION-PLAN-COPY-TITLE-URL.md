@@ -1,57 +1,67 @@
 # Implementation Plan for Copy Title and URL Button
 
-## Original Wishlist Item
+## Wishlist Item and Requirements
 
 **Status:** In Progress
 
-Add a "Copy Title and URL" button alongside the existing "Copy URL" button.
+Add a **“Copy Title and URL”** button alongside the existing **“Copy URL”** button on the post detail page.
 
-**Format options:**
-- `[Title](URL)` (Markdown link)
-- `Title - URL` (plain text)
-- `Title\nURL` (multi-line) - **UPDATED:** Changed from `Title\nURL` to `"Title"\nURL`
+### Supported formats
 
-**Rationale:** Common sharing pattern - people often want to share both title and link together.
+The copy output is controlled by configuration.
 
-**Implementation notes:**
-- Use same feedback mechanism as "Copy URL"
-- Consider making format configurable via environment variable
+**Built-in formats:**
 
----
+1. ``** (default)**
 
-## Updated Requirements
-
-### Format Options
-
-Three format options will be supported:
-
-1. **`markdown`** - Markdown link format
-   - Output: `[Title](URL)`
-   - Use case: Sharing in Markdown documents, GitHub, Discord, etc.
-
-2. **`plain`** - Plain text with separator
    - Output: `Title - URL`
-   - Use case: Sharing in plain text contexts, emails, etc.
+   - Use case: Plain text, email, chat apps
 
-3. **`multiline`** - Multi-line format with quoted title
-   - Output: `"Title"\nURL`
-   - Use case: Sharing where title and URL should be on separate lines
-   - **Change from wishlist:** Title is now wrapped in quotes for clarity
+2. ``
+
+   - Output: `[Title](URL)`
+   - Use case: Markdown contexts (GitHub, Discord, etc.)
+
+3. ``
+
+   - Output: `Title\nURL`
+   - Use case: When you want title and URL on separate lines
+   - **Note:** No special escaping/quoting of the title is required.
 
 ### Configuration
 
-**Environment Variable:** `COPY_TITLE_URL_FORMAT`
+**Environment Variable:** `COPY_TITLE_AND_URL_FORMAT`
 
-**Possible values:**
-- `markdown` (default if not set)
-- `plain`
-- `multiline`
+**Accepted values:**
 
-**Rationale for environment variable approach:**
-- Reduces cognitive overhead on users - no format selection UI needed
-- Admin configures once based on community preference
-- Consistent behavior across all posts
-- Simpler implementation and maintenance
+- One of the built-in format names: `plain`, `markdown`, `multiline`
+- OR a **template string** containing `${title}` and `${url}` placeholders.
+
+**Default behavior (if not set, invalid, too long, or malformed):** `plain`
+
+### Template support
+
+You may provide a custom template, for example:
+
+```
+title: ${title}
+url: ${url}
+```
+
+Validation rules:
+
+- Only `${title}` and `${url}` are allowed.
+- If any other `${...}` variable appears, treat as invalid.
+- If the string is too long or malformed, treat as invalid.
+- If invalid, **log a warning** and fall back to default (`plain`).
+
+### Title fallback
+
+If a post has no title, use:
+
+- `Post from INSTANCE_NAME`
+
+(Where `INSTANCE_NAME` is the configured instance/community name already available in config.)
 
 ---
 
@@ -59,216 +69,199 @@ Three format options will be supported:
 
 ### 1. Backend Changes
 
-#### New Configuration Variable
+#### New configuration field
 
 **File:** `functions/api/config.js`
 
-Add new configuration field:
+Add a new config property:
 
-```javascript
-copyTitleUrlFormat: env.COPY_TITLE_URL_FORMAT || "markdown"
+```js
+copyTitleAndUrlFormat: env.COPY_TITLE_AND_URL_FORMAT || "plain"
 ```
 
-**Documentation:** Add to `CONFIGURATION.md`
+(Ensure the config object also includes whatever is needed to render `INSTANCE_NAME` on the client side, if it isn’t already.)
 
 ### 2. Frontend Changes
 
-#### Post Detail Page (`functions/p/[id].js`)
+#### Post detail page
+
+**File:** `functions/p/[id].js`
 
 **Current state:**
-- Has "Copy URL" button that copies `window.location.href`
-- Uses temporary button text change for feedback ("Copied!")
+
+- Has “Copy URL” button that copies `window.location.href`
+- Uses temporary button text feedback (“Copied!”)
 
 **Changes needed:**
-- Add "Copy Title and URL" button next to existing "Copy URL" button
-- Implement format logic based on config value
-- Use same feedback mechanism
+
+- Add “Copy Title and URL” button next to “Copy URL”
+- Copy formatted text according to `CONFIG.copyTitleAndUrlFormat`
+- Use the same feedback mechanism
 
 **Button placement:**
+
 ```
 [Copy URL] [Copy Title and URL]
 ```
 
-#### JavaScript Implementation
+#### Format generation logic
 
-**Format generation logic:**
+Implement a single function that:
 
-```javascript
-function formatTitleAndUrl(title, url, format) {
-  switch (format) {
-    case 'markdown':
-      return `[${title}](${url})`;
-    case 'plain':
-      return `${title} - ${url}`;
-    case 'multiline':
-      return `"${title}"\n${url}`;
-    default:
-      return `[${title}](${url})`; // fallback to markdown
+- Normalizes invalid built-in format strings to `plain`
+- Supports template strings
+- Avoids duplicating the default template anywhere
+
+**Suggested approach:**
+
+- Define a constant for the default output behavior (built-in `plain`).
+- Validate templates (allowed variables only, length limit, basic sanity checks).
+- If invalid, log a warning and use `plain`.
+
+Pseudo-code sketch:
+
+```js
+function formatTitleAndUrl({ title, url, format, instanceName }) {
+  const resolvedTitle = title?.trim() ? title.trim() : `Post from ${instanceName}`;
+
+  // Built-in formats
+  if (format === 'markdown') return `[${resolvedTitle}](${url})`;
+  if (format === 'multiline') return `${resolvedTitle}\n${url}`;
+  if (format === 'plain') return `${resolvedTitle} - ${url}`;
+
+  // Template format
+  if (isTemplateString(format) && isValidTemplate(format)) {
+    return format
+      .replaceAll('${title}', resolvedTitle)
+      .replaceAll('${url}', url);
   }
+
+  // Invalid format: warn + fallback to plain
+  console.warn('Invalid COPY_TITLE_AND_URL_FORMAT; falling back to plain');
+  format = 'plain';
+  return `${resolvedTitle} - ${url}`;
 }
 ```
 
-**Copy button handler:**
+Notes:
 
-```javascript
-async function copyTitleAndUrl() {
-  const title = document.querySelector('h1').textContent || '(untitled)';
-  const url = window.location.href;
-  const format = CONFIG.copyTitleUrlFormat || 'markdown';
-  const formatted = formatTitleAndUrl(title, url, format);
-  
-  await navigator.clipboard.writeText(formatted);
-  
-  // Feedback (same pattern as Copy URL button)
-  const btn = event.target;
-  const originalText = btn.textContent;
-  btn.textContent = 'Copied!';
-  setTimeout(() => {
-    btn.textContent = originalText;
-  }, 2000);
-}
-```
+- For multiline format, do **not** escape/quote the title.
+- The “invalid format” branch should explicitly change the local `format` to `plain` (even if it’s not reused) to match intent and keep logic clear.
+
+#### Copy button handler
+
+- Fetch title from the page (or from whatever data you already have for the post).
+- Use `window.location.href` for the URL.
+- Use config format from `CONFIG.copyTitleAndUrlFormat`.
+
+Edge cases:
+
+- Empty/missing title: use `Post from INSTANCE_NAME`.
 
 ### 3. Documentation Updates
 
 #### CONFIGURATION.md
 
-Add new section:
+Add/update section:
 
-```markdown
-### COPY_TITLE_URL_FORMAT
+```md
+### COPY_TITLE_AND_URL_FORMAT
 
-**Type:** String  
-**Default:** `markdown`  
-**Possible values:** `markdown`, `plain`, `multiline`
+**Type:** String
+**Default:** `plain`
 
-Controls the format used by the "Copy Title and URL" button on post detail pages.
+Controls the output of the “Copy Title and URL” button.
 
-- `markdown`: `[Title](URL)` - Markdown link format
-- `plain`: `Title - URL` - Plain text with separator
-- `multiline`: `"Title"\nURL` - Multi-line format with quoted title
+Built-in formats:
+- `plain`: `Title - URL`
+- `markdown`: `[Title](URL)`
+- `multiline`: `Title\nURL`
 
-**Example:**
+Custom template:
+You may supply a template containing `${title}` and `${url}`, e.g.
+
 ```
-COPY_TITLE_URL_FORMAT=plain
+
+title: \${title} url: \${url}
+
 ```
+
+If the value is invalid (unknown format, unsupported variables, too long, or malformed), Textpile will log a warning and fall back to `plain`.
 ```
 
-#### User's Guide.md
+#### User’s Guide.md
 
-Add section explaining the copy buttons:
-
-```markdown
-### Sharing Posts
-
-Each post detail page includes two copy buttons:
-
-- **Copy URL** - Copies just the post URL
-- **Copy Title and URL** - Copies both title and URL in a configured format
-
-The format for "Copy Title and URL" is set by your administrator.
-```
+Update “Sharing Posts” section to mention two copy buttons and that admins control the format via configuration.
 
 #### WISHLIST.md
 
-Update status from "Proposed" to "Implemented" and add implementation notes.
+Delete the “Copy title and URL” section entirely (do not mark implemented).
+
+#### CHANGELOG.md
+
+Add a note to the next release:
+
+- “Add ‘Copy Title and URL’ button with configurable output format (built-ins + templates).”
 
 ---
 
 ## Testing Plan
 
-### Manual Testing
+### Manual testing
 
-1. **Test each format:**
-   - Set `COPY_TITLE_URL_FORMAT=markdown` and verify output
-   - Set `COPY_TITLE_URL_FORMAT=plain` and verify output
-   - Set `COPY_TITLE_URL_FORMAT=multiline` and verify output
-   - Test with unset variable (should default to markdown)
+1. **Built-in formats**
 
-2. **Test edge cases:**
-   - Post with no title (should use "(untitled)")
-   - Post with special characters in title
-   - Post with very long title
-   - Post with quotes in title (for multiline format)
+   - `COPY_TITLE_AND_URL_FORMAT=plain`
+   - `COPY_TITLE_AND_URL_FORMAT=markdown`
+   - `COPY_TITLE_AND_URL_FORMAT=multiline`
+   - Unset variable (defaults to `plain`)
 
-3. **Test feedback mechanism:**
-   - Verify "Copied!" message appears
-   - Verify button text returns to original after 2 seconds
-   - Test rapid clicking
+2. **Template formats**
 
-4. **Test clipboard:**
-   - Verify copied text matches expected format
-   - Test pasting in different contexts (Markdown editor, plain text, etc.)
+   - Valid template:
+     - `title: ${title}\nurl: ${url}`
+   - Invalid template variables:
+     - `x: ${title}\ny: ${slug}` → warn + fallback
+   - Too-long template → warn + fallback
+   - Malformed template → warn + fallback
 
-### Browser Compatibility
+3. **Edge cases**
 
-- Test in Chrome/Edge (Chromium)
-- Test in Firefox
-- Test in Safari
-- Verify `navigator.clipboard.writeText()` works in all browsers
+   - Post with no title → `Post from INSTANCE_NAME`
+   - Titles with special characters
+   - Very long titles
+
+4. **Feedback mechanism**
+
+   - Button shows “Copied!”
+   - Button returns to original label after 2 seconds
+   - Rapid clicking
+
+5. **Clipboard behavior**
+
+   - Verify copied text exactly matches expected output
+   - Paste into markdown editor, plain text, etc.
+
+### Browser compatibility
+
+- Chrome/Edge
+- Firefox
+- Safari
 
 ---
 
 ## Files to Modify
 
-1. **`functions/api/config.js`** - Add COPY_TITLE_URL_FORMAT to config
-2. **`functions/p/[id].js`** - Add button and copy logic
-3. **`CONFIGURATION.md`** - Document new environment variable
-4. **`User's Guide.md`** - Document copy buttons for users
-5. **`WISHLIST.md`** - Update status to "Implemented"
-6. **`CHANGELOG.md`** - Add to next release notes
-
----
-
-## Estimated Effort
-
-- Backend config: 5 minutes
-- Frontend implementation: 30 minutes
-- Documentation: 15 minutes
-- Testing: 20 minutes
-
-**Total:** ~70 minutes
-
----
-
-## Future Enhancements (Out of Scope)
-
-- Per-user format preference (would require user accounts)
-- Custom format templates via environment variable
-- Additional format options (HTML link, BBCode, etc.)
-- Copy button on index page for each post
-- Bulk copy of multiple posts
-
----
-
-## Questions for Review
-
-1. Should the multiline format escape quotes in the title? (e.g., `"Title with \"quotes\""\nURL`)
-2. Should there be a fourth format option for just `Title\nURL` without quotes?
-3. Should the button text be "Copy Title and URL" or something shorter like "Copy Both"?
-4. Should we add this button to the index page as well, or just post detail pages?
+1. `functions/api/config.js`
+2. `functions/p/[id].js`
+3. `CONFIGURATION.md`
+4. `User's Guide.md`
+5. `WISHLIST.md`
+6. `CHANGELOG.md`
 
 ---
 
 ## Implementation Checklist
 
-- [ ] Add `COPY_TITLE_URL_FORMAT` to `functions/api/config.js`
-- [ ] Implement format logic in `functions/p/[id].js`
-- [ ] Add "Copy Title and URL" button to post detail page
-- [ ] Test all three formats
-- [ ] Test edge cases (no title, special characters, etc.)
-- [ ] Update `CONFIGURATION.md` with new environment variable
-- [ ] Update `User's Guide.md` with copy button documentation
-- [ ] Update `WISHLIST.md` status to "Implemented"
-- [ ] Add to `CHANGELOG.md`
-- [ ] Test in multiple browsers
-- [ ] Create pull request
+-
 
----
-
-## Notes
-
-- This feature maintains consistency with existing Textpile patterns (environment variable configuration, simple UI)
-- No database changes required
-- No breaking changes
-- Fully backward compatible (existing "Copy URL" button unchanged)
