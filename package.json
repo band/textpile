@@ -1,6 +1,6 @@
 {
   "name": "textpile",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "type": "module",
   "private": true,
   "description": "A low-maintenance Cloudflare Pages + Functions + KV application for non-attributed, auto-expiring community posts",
