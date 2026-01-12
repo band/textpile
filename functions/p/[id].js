@@ -205,7 +205,7 @@ export async function onRequestGet({ params, env }) {
 
       // Built-in formats
       if (format === 'markdown') return \`[\${resolvedTitle}](\${url})\`;
-      if (format === 'multiline') return \`\"${resolvedTitle}"\\n\${url}\`;
+      if (format === 'multiline') return \`"\${resolvedTitle}"\\n\${url}\`;
       if (format === 'plain') return \`\${resolvedTitle} - \${url}\`;
 
       // Template format
