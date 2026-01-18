@@ -31,13 +31,27 @@
     <div id="list"></div>
 
     <script type="module">
-      import { initPage, formatDateTime } from '/textpile-utils.js';
+      import { initPage, formatDateTime, formatDate } from '/textpile-utils.js';
 
       const status = document.getElementById("status");
       const list = document.getElementById("list");
 
       function escapeHtml(s) {
         return s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+      }
+
+      function formatExpiration(expiresAt) {
+        if (!expiresAt) return "";
+
+        const expiryDate = new Date(expiresAt);
+        const now = new Date();
+        const msRemaining = expiryDate.getTime() - now.getTime();
+        const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
+
+        if (daysRemaining <= 0) return "";
+
+        const formattedDate = formatDate(expiresAt);
+        return \` · Expires \${formattedDate} (\${daysRemaining} day\${daysRemaining === 1 ? '' : 's'})\`;
       }
 
       // Initialize page (load config, apply community name, update page title, add footer)
@@ -57,12 +71,13 @@
         list.innerHTML = items.map(it => {
           const title = it.title ? escapeHtml(it.title) : "(untitled)";
           const created = it.createdAt ? formatDateTime(it.createdAt) : "";
+          const expires = formatExpiration(it.expiresAt);
           const url = it.url ? escapeHtml(it.url) : "#";
           const pinIcon = it.pinned ? '📌 ' : '';
           return `
             <div class="card">
               <div><a href="${url}">${pinIcon}${title}</a></div>
-              <div class="meta">${escapeHtml(created)} · ${escapeHtml(it.id)}</div>
+              <div class="meta">Created ${escapeHtml(created)}${expires} · ${escapeHtml(it.id)}</div>
             </div>
           `;
         }).join("");

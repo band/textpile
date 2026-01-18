@@ -77,6 +77,21 @@ export async function onRequestGet({ params, env }) {
 
   // Render Markdown client-side using marked (CDN) to keep the function tiny.
   const formattedDate = formatDateTime(createdAt, dateFormat, timeFormat, 'en-US');
+
+  // Format expiration info
+  let expirationInfo = '';
+  if (expiresAt) {
+    const formattedExpiry = formatDateTime(expiresAt, dateFormat, timeFormat, 'en-US');
+    const expiryDate = new Date(expiresAt);
+    const now = new Date();
+    const msRemaining = expiryDate.getTime() - now.getTime();
+    const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
+
+    if (daysRemaining > 0) {
+      expirationInfo = ` · Expires ${formattedExpiry} (${daysRemaining} day${daysRemaining === 1 ? '' : 's'})`;
+    }
+  }
+
   const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -99,7 +114,7 @@ export async function onRequestGet({ params, env }) {
 
   <h1>${escapeHtml(title || "(untitled)")}</h1>
 
-  <div class="meta">${escapeHtml(formattedDate)} · ${escapeHtml(id)}</div>
+  <div class="meta">Created ${escapeHtml(formattedDate)}${escapeHtml(expirationInfo)} · ${escapeHtml(id)}</div>
 
   <div class="actions" style="margin: 12px 0; gap: 0.2em;">
     <button id="toggle-render-btn">View as plain text</button>
@@ -112,6 +127,8 @@ export async function onRequestGet({ params, env }) {
 
   <hr />
 
+  <div id="expiration-banner"></div>
+
   <article id="content"></article>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -123,6 +140,7 @@ export async function onRequestGet({ params, env }) {
   </script>
   <script>
     const raw = ${JSON.stringify(body)};
+    const expiresAt = ${JSON.stringify(expiresAt)};
     const content = document.getElementById("content");
     let renderMode = "formatted";
 
@@ -286,6 +304,29 @@ export async function onRequestGet({ params, env }) {
         alert("Failed to download: " + err.message);
       }
     });
+
+    // Display expiration banner
+    if (expiresAt) {
+      const banner = document.getElementById("expiration-banner");
+      const expiryDate = new Date(expiresAt);
+      const now = new Date();
+      const msRemaining = expiryDate.getTime() - now.getTime();
+      const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
+
+      if (daysRemaining > 0) {
+        let message;
+        let bannerClass = "info-banner";
+
+        if (daysRemaining <= 7) {
+          message = \`⚠️ This post will expire in \${daysRemaining} day\${daysRemaining === 1 ? '' : 's'}. Save it now if you want to keep it.\`;
+          bannerClass = "info-banner warning";
+        } else {
+          message = \`This post will expire in \${daysRemaining} days. Save it now if you want to keep it.\`;
+        }
+
+        banner.innerHTML = \`<div class="\${bannerClass}">\${message}</div>\`;
+      }
+    }
   </script>
 </body>
 </html>`;
