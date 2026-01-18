@@ -116,6 +116,8 @@ export async function onRequestGet({ params, env }) {
 
   <div class="meta">Created ${escapeHtml(formattedDate)}${escapeHtml(expirationInfo)} · ${escapeHtml(id)}</div>
 
+  <div id="expiration-banner"></div>
+
   <div class="actions" style="margin: 12px 0; gap: 0.2em;">
     <button id="toggle-render-btn">View as plain text</button>
     <button id="copy-btn">Copy text</button>
@@ -126,8 +128,6 @@ export async function onRequestGet({ params, env }) {
   </div>
 
   <hr />
-
-  <div id="expiration-banner"></div>
 
   <article id="content"></article>
 
