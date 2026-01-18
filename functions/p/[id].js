@@ -251,8 +251,13 @@ export async function onRequestGet({ params, env }) {
         const postTitle = ${JSON.stringify(title)};
         const postId = ${JSON.stringify(id)};
 
+        console.log('Download - postTitle:', postTitle, 'type:', typeof postTitle);
+        console.log('Download - postId:', postId);
+
         // Sanitize filename by replacing filesystem-unfriendly characters
         let filename = postTitle || 'untitled';
+        console.log('After initial assignment:', filename);
+
         filename = filename
           .replace(/[/\\:*?"<>|]/g, '-')  // Replace invalid chars with dash
           .replace(/\s+/g, ' ')            // Normalize whitespace
@@ -260,8 +265,11 @@ export async function onRequestGet({ params, env }) {
           .replace(/^\.+/, '')             // Remove leading dots
           .substring(0, 200);              // Limit length
 
+        console.log('After sanitization:', filename);
+
         // Fallback to post ID if title becomes empty after sanitization
         if (!filename) {
+          console.log('Filename is empty, using postId');
           filename = postId;
         }
 
