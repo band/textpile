@@ -127,39 +127,53 @@ wrangler pages dev public/ --kv=KV
 
 ### Template Literal Escaping in Server Functions
 
-**CRITICAL**: When embedding JavaScript code inside template literals in server-side functions (e.g., `functions/p/[id].js`), backslashes in regex patterns must be **double-escaped**.
+**CRITICAL**: When embedding JavaScript code inside template literals in server-side functions (e.g., `functions/p/[id].js`), certain JavaScript syntax must be **escaped** because the server-side template literal processes it first.
 
-**Problem**: JavaScript regex patterns use backslashes for escape sequences. When these patterns are inside a template literal that's being constructed server-side, the backslashes are processed during template literal evaluation, causing the regex to break.
+**Problem**: When you write JavaScript code inside a server-side template literal (backtick string), the server evaluates the template literal syntax before sending it to the browser. This means backslashes, template literal syntax, and other special characters get processed twice - once server-side, once client-side.
+
+**What needs escaping in server-side template literals**:
+
+1. **Backslashes in regex patterns** - must be doubled:
+   - `\s` → `\\s`
+   - `\d` → `\\d`
+   - `\.` → `\\.`
+   - `\\` → `\\\\`
+
+2. **Template literal syntax** - must be escaped with backslash:
+   - Backticks: `` ` `` → `` \` ``
+   - Dollar-brace: `${expr}` → `\${expr}`
 
 **Examples**:
 
-❌ **Wrong** (inside template literal):
+❌ **Wrong** (inside server-side template literal):
 ```javascript
 const html = `<script>
-  filename.replace(/\s+/g, ' ')       // \s becomes just s
-  filename.replace(/^\.+/, '')        // \. becomes just .
-  filename.replace(/[/\\:*?"<>|]/g)   // \\ becomes just \
+  filename.replace(/\s+/g, ' ')           // \s becomes just s (broken)
+  const msg = \`Hello \${name}\`;         // Evaluated server-side (broken)
+  const days = \`\${count} days\`;        // Evaluated server-side (broken)
 </script>`;
 ```
 
-✅ **Correct** (inside template literal):
+✅ **Correct** (inside server-side template literal):
 ```javascript
 const html = `<script>
-  filename.replace(/\\s+/g, ' ')      // \\s → \s in output
-  filename.replace(/^\\.+/, '')       // \\. → \. in output
-  filename.replace(/[/\\\\:*?"<>|]/g) // \\\\ → \\ in output
+  filename.replace(/\\s+/g, ' ')          // \\s → \s in output ✓
+  const msg = \\\`Hello \\\${name}\\\`;   // \` and \$ escaped ✓
+  const days = \\\`\\\${count} days\\\`;  // Template literal preserved ✓
 </script>`;
 ```
-
-**Rule of thumb**: When writing JavaScript regex inside a template literal in server functions, double all backslashes:
-- `\s` → `\\s`
-- `\d` → `\\d`
-- `\.` → `\\.`
-- `\\` → `\\\\`
 
 **Where this applies**:
-- All `functions/**/*.js` files that return HTML with embedded `<script>` tags
+- **ONLY** in `functions/**/*.js` files that return HTML with embedded `<script>` tags
 - Particularly `functions/p/[id].js` which has extensive client-side JavaScript
+- **Does NOT apply** to client-side files like `public/**/*.html` or `public/**/*.js`
+
+**Where this does NOT apply**:
+- Regular `<script>` tags in `public/**/*.html` files - use normal JavaScript syntax
+- Standalone `.js` files in `public/` directory - use normal JavaScript syntax
+- Client-side JavaScript code that isn't being embedded in a server-side template literal
+
+**Quick check**: If you're editing a file in `functions/` that builds an HTML string with embedded JavaScript, you need escaping. If you're editing a file in `public/`, you don't.
 
 ## Security Considerations
 
