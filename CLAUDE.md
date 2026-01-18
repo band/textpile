@@ -268,3 +268,72 @@ curl -X POST https://YOURDOMAIN/api/remove \
 - **No implied custody**: Authors responsible for their own content archival
 - **Temporary by default**: Forced expiration prevents accidental permanence
 - **Non-attributed at artifact layer**: No author metadata stored
+
+## Release Process
+
+**IMPORTANT**: When creating a new release, follow the documented process in CONTRIBUTING.md exactly. Do not skip steps.
+
+### Version Numbering
+
+Textpile follows [Semantic Versioning](https://semver.org/):
+- **MAJOR** (X.0.0): Breaking changes
+- **MINOR** (0.X.0): New features (backwards compatible)
+- **PATCH** (0.0.X): Bug fixes
+
+### Required Steps
+
+**Complete all steps in order:**
+
+1. **Update version in source**
+   ```bash
+   # Edit public/version.js
+   export const TEXTPILE_VERSION = "0.10.0";
+   ```
+
+2. **Run version sync script**
+   ```bash
+   npm run update-version
+   ```
+   This auto-updates: README.md, CONFIGURATION.md, package.json
+
+3. **Update CHANGELOG.md**
+   - Add new version section with date
+   - List changes under categories: Added, Changed, Fixed, Security, etc.
+   - Note breaking changes with `⚠️ BREAKING CHANGES`
+
+4. **Commit and tag**
+   ```bash
+   git add -A
+   git commit -m "Release v0.10.0"
+   git tag -a v0.10.0 -m "Release v0.10.0"
+   ```
+   **CRITICAL**: The git tag step is required - do not skip it.
+
+5. **Push to GitHub with tags**
+   ```bash
+   git push origin main --tags
+   ```
+   **CRITICAL**: Use `--tags` flag to push the release tag.
+
+6. **Verify deployment**
+   - Check Cloudflare Pages deployment succeeds
+   - Verify tag exists on GitHub
+   - Test production site
+
+### Release Checklist
+
+- [ ] Updated `public/version.js` with new version number
+- [ ] Ran `npm run update-version` successfully
+- [ ] Updated `CHANGELOG.md` with release notes
+- [ ] Committed with `Release vX.Y.Z` message
+- [ ] Created git tag with `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+- [ ] Pushed with `--tags` using `git push origin main --tags`
+- [ ] Verified tag exists on GitHub
+- [ ] Verified Cloudflare deployment succeeded
+- [ ] Tested production site
+
+### Version Files
+
+- **Source of truth**: `public/version.js` (manually edited)
+- **Auto-updated**: `README.md`, `CONFIGURATION.md`, `package.json` (via script)
+- **Manual**: `CHANGELOG.md` (add release notes manually)
