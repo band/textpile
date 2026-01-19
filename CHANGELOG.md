@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-01-19
+
+### Added
+- Favicon support for browser tab icons
+  - SVG favicon for modern browsers (scalable, high quality)
+  - Multi-resolution ICO favicon for legacy browser support (16x16, 32x32, 48x48)
+  - Favicon meta tags added to all HTML pages (index, add, about, admin, post views)
+  - Proper fallback chain: SVG preferred, ICO for older browsers
+
+### Removed
+- Temporary assets directory (tmp-assets) after integrating favicon
+
 ## [0.11.0] - 2026-01-18
 
 ### Added

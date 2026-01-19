@@ -34,6 +34,8 @@ export async function onRequestGet({ params, env }) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>Post Expired</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
@@ -97,6 +99,8 @@ export async function onRequestGet({ params, env }) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>${escapeHtml(title || "Post")}</title>
   <link rel="stylesheet" href="/style.css" />
 </head>

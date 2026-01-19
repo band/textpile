@@ -26,7 +26,11 @@
       "Bash(if [ -f wrangler.toml ])",
       "Bash(then cat wrangler.toml)",
       "Bash(fi)",
-      "Bash(npm run update-version:*)"
+      "Bash(npm run update-version:*)",
+      "Bash(git merge-base:*)",
+      "WebSearch",
+      "Bash(git merge:*)",
+      "Bash(convert:*)"
     ]
   }
 }
