@@ -30,7 +30,9 @@
       "Bash(git merge-base:*)",
       "WebSearch",
       "Bash(git merge:*)",
-      "Bash(convert:*)"
+      "Bash(convert:*)",
+      "Bash(test:*)",
+      "Bash(tree:*)"
     ]
   }
 }
