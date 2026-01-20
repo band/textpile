@@ -103,6 +103,9 @@
         TOKEN = document.getElementById("admin-token").value.trim();
         const error = document.getElementById("login-error");
 
+        // Show loading cursor while fetching data
+        document.body.style.cursor = 'wait';
+
         try {
           const res = await fetch("/api/admin/stats", {
             headers: { "Authorization": `Bearer ${TOKEN}` }
@@ -116,12 +119,13 @@
 
           document.getElementById("login-section").classList.add("hidden");
           document.getElementById("admin-panel").classList.remove("hidden");
-          loadStats();
-          loadEnvVars();
-          loadPosts();
+          await Promise.all([loadStats(), loadEnvVars(), loadPosts()]);
         } catch (err) {
           console.error("Login error:", err);
           error.textContent = err.message || "Invalid admin token";
+        } finally {
+          // Restore default cursor after loading completes
+          document.body.style.cursor = 'default';
         }
       });
 

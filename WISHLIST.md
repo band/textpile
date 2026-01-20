@@ -2,6 +2,45 @@
 
 Feature ideas and enhancements for future consideration. Not all items may be implemented.
 
+## Admin Page Performance Optimization
+
+**Status:** Proposed
+
+The admin page currently loads data from three separate API endpoints (`/api/admin/stats`, `/api/admin/env`, `/api/admin/posts`) which can take a couple seconds on instances with many posts. Explore ways to speed up the initial load.
+
+**Potential approaches:**
+
+1. **Combined endpoint:** Create `/api/admin/dashboard` that returns stats, env vars, and posts in a single request
+   - Reduces round-trip latency (3 requests → 1 request)
+   - Server can prepare data in parallel internally
+   - Trade-off: Larger initial payload
+
+2. **Pagination for posts list:** Load posts in batches instead of all at once
+   - Initial load shows first 25 posts
+   - "Load more" button or infinite scroll for remaining posts
+   - Reduces initial payload size significantly
+
+3. **Progressive loading:** Show stats and env vars immediately, load posts in background
+   - Better perceived performance
+   - Already implemented with parallel loading via `Promise.all()`
+
+4. **Caching:** Cache stats/env vars in browser localStorage
+   - Show cached data immediately on page load
+   - Refresh in background
+   - Trade-off: May show stale data briefly
+
+5. **Optimize KV queries:** Investigate if KV list operations can be optimized
+   - Consider storing pre-computed stats in KV
+   - Update stats incrementally on post add/delete
+
+**Current mitigations:**
+- Loading cursor provides visual feedback (implemented in v1.0.2)
+- Parallel loading of three endpoints via `Promise.all()`
+
+**Implementation priority:** Low - current UX is acceptable with loading cursor
+
+---
+
 ## Post Expiration Awareness
 
 **Status:** Proposed
