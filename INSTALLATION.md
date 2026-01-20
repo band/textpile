@@ -39,9 +39,11 @@ cd textpile
 4. Select your Textpile repository
 5. Configure build settings:
    - **Framework preset**: None
-   - **Build command**: *(leave blank)*
+   - **Build command**: `npm run build` (optional - only needed if enabling PUBLIC_SOURCE_ZIP feature, see step 5)
    - **Build output directory**: `public`
 6. Click **Save and Deploy**
+
+**Note**: The build command is optional. Leave it blank unless you plan to enable the public source zip download feature (PUBLIC_SOURCE_ZIP environment variable).
 
 ### 4. Bind the KV Namespace
 
@@ -186,6 +188,60 @@ Control maximum post and total storage sizes:
 
 **Note**: The admin interface uses MAX_KV_SIZE to calculate storage usage and show warnings at 80% and 95% capacity.
 
+#### Optional: Public Source Zip Download
+
+Enable downloadable source code zip for visitors (helps Textpile spread):
+
+1. Click "+ Add" to the right of "**Variables and Secrets**"
+2. **Variable name**: `PUBLIC_SOURCE_ZIP`
+3. **Value**: `true`
+4. **Environment**: Production
+5. Click **Save**
+
+**What this does:**
+- Generates `/assets/textpile-{version}-source.zip` during build
+- Adds "Download source zip from this instance" link to footer
+- Zip contains all source code (~158KB) excluding node_modules and .git
+- Makes it easy for visitors to fork and deploy their own instance
+
+**Requirements:**
+- Build command must be set to `npm run build` (see step 3)
+- If build command is not configured, this feature will not work
+
+**When to enable:**
+- Running an open, public instance
+- Want to encourage community forking and deployment
+- Want visitors to see exactly what code is running
+
+**When to leave disabled (default):**
+- Private or internal instances
+- Don't want to encourage forking
+- Haven't configured build command
+
+#### Optional: Software Name (For Forks)
+
+Rebrand the software name in the footer (useful if you've forked Textpile):
+
+1. Click "+ Add" to the right of "**Variables and Secrets**"
+2. **Variable name**: `SOFTWARE_NAME`
+3. **Value**: Your software name (e.g., "MyCommunity Paste")
+4. **Environment**: Production
+5. Click **Save**
+
+**Default**: "Textpile"
+
+**What this does:**
+- Changes footer from "This site runs Textpile {version}" to "This site runs {SOFTWARE_NAME} {version}"
+- Easiest way to rebrand a fork without code changes
+- Helps distinguish your fork from official Textpile instances
+
+**When to set:**
+- You've forked Textpile and modified it
+- Want clear attribution for your custom version
+- Want users to know they're using a fork
+
+**See also**: CONTRIBUTING.md "Fork Naming & Provenance" section for additional branding options
+
 ### 6. Verify Deployment
 
 1. Wait for the deployment to complete (usually < 1 minute)
@@ -291,6 +347,21 @@ Cloudflare Pages provides built-in analytics:
 - Ensure Wrangler is installed: `wrangler --version`
 - Create preview KV namespace: `wrangler kv:namespace create KV --preview`
 - Check `.dev.vars` file is in the project root
+
+### Public source zip not appearing
+
+**Symptom**: Set `PUBLIC_SOURCE_ZIP=true` but no download link appears in footer.
+
+**Common causes:**
+1. **Build command not configured**: Go to Settings → Builds & deployments → Edit configuration → Set build command to `npm run build`
+2. **Need to redeploy**: Changes to environment variables require a new deployment
+3. **Build failed**: Check deployment logs for errors during build
+
+**Solution:**
+1. Verify build command is set: Settings → Builds & deployments
+2. Trigger new deployment: Deployments → Retry deployment
+3. Check build logs: Click on deployment → View build logs
+4. Look for "✓ Created public/assets/textpile-X.X.X-source.zip" in logs
 
 ## Updating Textpile
 
