@@ -62,6 +62,8 @@ Configure via Cloudflare Pages Settings → Variables and Secrets:
 
 - `ADD_POST_PASSWORD` (optional) - Shared password to gate adding posts (anti-spam)
 - `ADMIN_TOKEN` (optional) - Required for `/api/remove` endpoint
+- `PUBLIC_SOURCE_ZIP` (optional) - Set to `"true"` to generate downloadable source zip during build (default: disabled)
+- `SOFTWARE_NAME` (optional) - Software name displayed in footer (default: "Textpile"). Use for fork rebranding.
 
 **Behavior**:
 - If `ADD_POST_PASSWORD` is unset, adding posts is open to all
@@ -174,6 +176,20 @@ const html = `<script>
 - Client-side JavaScript code that isn't being embedded in a server-side template literal
 
 **Quick check**: If you're editing a file in `functions/` that builds an HTML string with embedded JavaScript, you need escaping. If you're editing a file in `public/`, you don't.
+
+### Source Zip Generation
+
+The build process can optionally generate a source zip using `git archive`:
+
+```bash
+# Only runs when PUBLIC_SOURCE_ZIP="true"
+./scripts/build-source-zip.sh
+```
+
+**Key points:**
+- Uses `git archive` to automatically exclude node_modules and untracked files
+- Reads version from `public/version.js` (source of truth)
+- Outputs to `public/assets/textpile-{version}-source.zip`
 
 ## Security Considerations
 

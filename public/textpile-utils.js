@@ -12,6 +12,8 @@ let CONFIG = {
   dateFormat: "YYYY-MM-DD",
   timeFormat: "HH:mm",
   textpileVersion: TEXTPILE_VERSION,
+  publicSourceZip: false,
+  softwareName: "Textpile",
 };
 
 // Load configuration from API
@@ -91,7 +93,14 @@ export function addFooter() {
 
   footerHTML += '<br>';
   footerHTML += 'This site runs ';
-  footerHTML += `Textpile ${escapeHtml(CONFIG.textpileVersion)} &middot; <a href="https://github.com/peterkaminski/textpile">source</a>`;
+  footerHTML += `${escapeHtml(CONFIG.softwareName)} ${escapeHtml(CONFIG.textpileVersion)}`;
+  footerHTML += ` &middot; <a href="https://github.com/peterkaminski/textpile">GitHub repo</a>`;
+
+  // Add source zip link if enabled
+  if (CONFIG.publicSourceZip) {
+    const zipUrl = `/assets/textpile-${escapeHtml(CONFIG.textpileVersion)}-source.zip`;
+    footerHTML += ` &middot; <a href="${zipUrl}">Download source zip from this instance</a>`;
+  }
 
   footer.innerHTML = footerHTML;
   document.body.appendChild(footer);

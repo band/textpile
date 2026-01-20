@@ -13,6 +13,8 @@ export async function onRequestGet({ env }) {
       timeFormat: env.TIME_FORMAT || "HH:mm",       // ICU format string (e.g., "h:mm a", "HH:mm:ss")
       copyTitleAndUrlFormat: env.COPY_TITLE_AND_URL_FORMAT || "plain",
       textpileVersion: TEXTPILE_VERSION,
+      publicSourceZip: env.PUBLIC_SOURCE_ZIP === "true",
+      softwareName: env.SOFTWARE_NAME || "Textpile",
     }
   }, {
     headers: {

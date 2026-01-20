@@ -504,6 +504,72 @@ MAX_KV_SIZE=1048576000
 
 ---
 
+### PUBLIC_SOURCE_ZIP
+
+**Type**: Boolean (`"true"` or `"false"`)
+
+**Default**: Not set (disabled)
+
+**Optional**: Yes
+
+Enables automatic generation of a source code zip file during Cloudflare Pages builds.
+
+**When to enable:**
+- You want to make it easy for visitors to fork and deploy your instance
+- You're running an open, public instance and want to help Textpile spread
+- You want visitors to see exactly what code is running on your instance
+
+**When to leave disabled:**
+- Private or internal instances
+- You don't want to encourage forking
+- Bandwidth/storage concerns (zip adds ~200KB to deployment)
+
+**Example:**
+```bash
+PUBLIC_SOURCE_ZIP="true"
+```
+
+**What it does:**
+1. During build, creates `/assets/textpile-{version}-source.zip`
+2. Adds footer link: "Download source zip from this instance"
+3. Zip includes all git-tracked files (excludes node_modules, .git, etc.)
+
+**Build requirement:**
+Cloudflare Pages must have a build command configured (usually `npm run build`). If no build command is set, the zip will not be generated even if this variable is set to `"true"`.
+
+---
+
+### SOFTWARE_NAME
+
+**Type**: String
+
+**Default**: `"Textpile"`
+
+**Optional**: Yes
+
+Sets the software name displayed in the footer ("This site runs {SOFTWARE_NAME} {version}").
+
+**When to set:**
+- You've forked Textpile and want to rebrand it
+- You want to distinguish your fork from official Textpile instances
+- You want clear attribution for your custom version
+
+**When to leave default:**
+- Running an unmodified Textpile instance
+- You're okay with the "Textpile" branding
+
+**Example:**
+```bash
+SOFTWARE_NAME="MyCommunity Paste"
+```
+
+This will display: "This site runs MyCommunity Paste 0.11.1" in the footer.
+
+**For fork maintainers:**
+This is the easiest way to rebrand a fork without modifying code. See CONTRIBUTING.md "Fork Naming & Provenance" section for additional branding options.
+
+---
+
 ## Quick Reference Table
 
 | Variable | Default | Purpose | Required? |
@@ -519,6 +585,8 @@ MAX_KV_SIZE=1048576000
 | `COPY_TITLE_AND_URL_FORMAT` | `"plain"` | Copy Title and URL format | No |
 | `MAX_POST_SIZE` | `1048576` | Max post size (bytes) | No |
 | `MAX_KV_SIZE` | `1048576000` | Storage target (bytes) | No |
+| `PUBLIC_SOURCE_ZIP` | Not set | Enable source zip download | No |
+| `SOFTWARE_NAME` | `"Textpile"` | Software name in footer | No |
 
 ---
 

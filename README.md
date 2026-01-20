@@ -16,6 +16,7 @@ Textpile is a temporary reading surface for communities - not an archive. It's d
 - **RSS feed**: RSS 2.0 feed for following posts in your feed reader
 - **Pin posts**: Highlight important posts at the top of the homepage
 - **Customizable**: Configure community name, contact email, retention defaults, date/time formats, size limits
+- **Optional Source Zip** (opt-in): One-click download of complete source code from any instance running the feature
 
 ## Core Philosophy
 

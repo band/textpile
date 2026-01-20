@@ -577,6 +577,49 @@ The version number appears in multiple places:
 
 **Always run `npm run update-version` after editing `public/version.js`.**
 
+### Enabling Public Source Zip
+
+Some Textpile instances may choose to offer a downloadable source zip for easier forking and deployment. This is **opt-in** and disabled by default.
+
+**To enable on your instance:**
+
+1. In Cloudflare Pages → Settings → Environment variables, add:
+   - `PUBLIC_SOURCE_ZIP` = `true`
+
+2. The next deployment will automatically generate:
+   - `/assets/textpile-{version}-source.zip`
+
+3. A footer link will appear: "Download source zip from this instance"
+
+**What's included in the zip:**
+- All tracked files in the git repository at deployment time
+- Excludes `node_modules`, `.git`, and other untracked files
+
+### Fork Naming & Provenance
+
+If you fork Textpile and deploy a modified public instance, please help maintain clarity about what instance users are visiting:
+
+**Recommended practices:**
+- Rebrand the software name (e.g., "MyCommunity Paste" instead of "Textpile")
+- Add a suffix to the version string (e.g., `0.11.1-mycommunity`)
+- Update `INSTANCE_NAME` environment variable to reflect your community name
+
+**Why this matters:**
+- Users can distinguish official Textpile from forks
+- Bug reports go to the right maintainer
+- Credit is properly attributed
+
+**How to customize (easiest to most complex):**
+1. **Software name** (easiest): Set `SOFTWARE_NAME` environment variable (e.g., `SOFTWARE_NAME="MyPaste"`)
+   - Footer will show: "This site runs MyPaste {version}"
+   - No code changes needed
+2. **Version suffix**: Edit `public/version.js` and append your suffix (e.g., `0.11.1-myorg`)
+3. **Instance name**: Set `INSTANCE_NAME` environment variable in Cloudflare Pages
+   - Controls the site title and header link text
+4. **Footer customization** (most control): Modify `public/textpile-utils.js` if you want complete custom branding
+
+This is a courtesy guideline, not a legal requirement (MIT license allows any use). We trust the community to be good stewards of attribution.
+
 ---
 
 ## Questions?
