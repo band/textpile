@@ -17,6 +17,7 @@ These are served directly from the `/public` directory:
 - **`/add` (add.html)** - Form for adding new posts
 - **`/admin` (admin.html)** - Admin dashboard for managing posts (requires ADMIN_TOKEN)
 - **`/test-date-formatter` (test-date-formatter.html)** - Testing page for date formatting utilities
+- **`/404` (404.html)** - Custom 404 error page with smart source zip detection
 
 ### API Routes
 
@@ -152,6 +153,17 @@ All admin routes require authentication via `Authorization: Bearer <ADMIN_TOKEN>
   - Calculates appropriate TTL for each post
   - Rebuilds the index after import
 
+#### **GET `/api/admin/env`**
+- **File**: `functions/api/admin/env.js`
+- **Purpose**: Get environment variables configuration
+- **Authentication**: Required ADMIN_TOKEN (Authorization header)
+- **Response**: JSON with categorized environment variables and their current values
+- **Categories**:
+  - Identity & Branding (INSTANCE_NAME, COMMUNITY_NAME, ADMIN_EMAIL)
+  - Access Control (ADD_POST_PASSWORD, ADMIN_TOKEN)
+  - Content Retention (DEFAULT_RETENTION)
+  - Display & Formatting (DATE_FORMAT, TIME_FORMAT, COPY_TITLE_AND_URL_FORMAT)
+
 ---
 
 ## Dynamic Routes
@@ -189,6 +201,7 @@ All admin routes require authentication via `Authorization: Bearer <ADMIN_TOKEN>
 | `/about` | GET | Static | No | About page |
 | `/add` | GET | Static | No | Add post form |
 | `/admin` | GET | Static | Yes (client-side) | Admin dashboard |
+| `/404` | GET | Static | No | Custom 404 page |
 | `/api` | GET | API | No | Get post index |
 | `/api/add` | POST | API | Optional | Add new post |
 | `/api/remove` | POST | API | Yes | Remove a post |
@@ -199,6 +212,7 @@ All admin routes require authentication via `Authorization: Bearer <ADMIN_TOKEN>
 | `/api/admin/clear` | POST | API | Yes | Delete all posts |
 | `/api/admin/export` | GET | API | Yes | Export as JSONL |
 | `/api/admin/import` | POST | API | Yes | Import from JSONL |
+| `/api/admin/env` | GET | API | Yes | Get environment config |
 | `/p/[id]` | GET | Dynamic | No | View specific post |
 | `/feed.xml` | GET | Dynamic | No | RSS feed |
 
