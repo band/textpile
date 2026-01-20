@@ -589,7 +589,7 @@ Some Textpile instances may choose to offer a downloadable source zip for easier
 2. The next deployment will automatically generate:
    - `/assets/textpile-{version}-source.zip`
 
-3. A footer link will appear: "Download source zip from this instance"
+3. A footer link will appear: "Download source code from this instance"
 
 **What's included in the zip:**
 - All tracked files in the git repository at deployment time

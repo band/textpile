@@ -200,7 +200,7 @@ Enable downloadable source code zip for visitors (helps Textpile spread):
 
 **What this does:**
 - Generates `/assets/textpile-{version}-source.zip` during build
-- Adds "Download source zip from this instance" link to footer
+- Adds "Download source code from this instance" link to footer
 - Zip contains all source code (~158KB) excluding node_modules and .git
 - Makes it easy for visitors to fork and deploy their own instance
 

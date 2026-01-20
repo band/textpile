@@ -531,7 +531,7 @@ PUBLIC_SOURCE_ZIP="true"
 
 **What it does:**
 1. During build, creates `/assets/textpile-{version}-source.zip`
-2. Adds footer link: "Download source zip from this instance"
+2. Adds footer link: "Download source code from this instance"
 3. Zip includes all git-tracked files (excludes node_modules, .git, etc.)
 
 **Build requirement:**

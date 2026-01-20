@@ -84,7 +84,7 @@ export function addFooter() {
 
   let footerHTML = '<hr />';
 
-  // Footer format: "{instance_name} · operated by {email}\nThis site runs Textpile {version} · source"
+  // Footer format: "{instance_name} · operated by {email}\nThis site runs {software_name} {version} · GitHub repo [· Download source code]\nTextpile is open source..."
   footerHTML += `<strong>${escapeHtml(CONFIG.instanceName)}</strong>`;
 
   if (CONFIG.adminEmail) {
@@ -99,8 +99,11 @@ export function addFooter() {
   // Add source zip link if enabled
   if (CONFIG.publicSourceZip) {
     const zipUrl = `/assets/textpile-${escapeHtml(CONFIG.textpileVersion)}-source.zip`;
-    footerHTML += ` &middot; <a href="${zipUrl}">Download source zip from this instance</a>`;
+    footerHTML += ` &middot; <a href="${zipUrl}">Download source code from this instance</a>`;
   }
+
+  footerHTML += '<br>';
+  footerHTML += 'Textpile is open source, you can run your own site for free.';
 
   footer.innerHTML = footerHTML;
   document.body.appendChild(footer);

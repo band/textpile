@@ -140,7 +140,7 @@ footerHTML += ` &middot; <a href="https://github.com/peterkaminski/textpile">Git
 // Add source zip link if enabled
 if (CONFIG.publicSourceZip) {
   const zipUrl = `/assets/textpile-${escapeHtml(CONFIG.textpileVersion)}-source.zip`;
-  footerHTML += ` &middot; <a href="${zipUrl}">Download source zip from this instance</a>\nTextpile is open source, you can run your own site for free.`;
+  footerHTML += ` &middot; <a href="${zipUrl}">Download source code from this instance</a>\nTextpile is open source, you can run your own site for free.`;
 }
 ```
 
@@ -185,7 +185,7 @@ Some Textpile instances may choose to offer a downloadable source zip for easier
 2. The next deployment will automatically generate:
    - `/assets/textpile-{version}-source.zip`
 
-3. A footer link will appear: "Download source zip from this instance"
+3. A footer link will appear: "Download source code from this instance"
 
 **What's included in the zip:**
 - All tracked files in the git repository at deployment time
@@ -249,7 +249,7 @@ PUBLIC_SOURCE_ZIP="true"
 
 **What it does:**
 1. During build, creates `/assets/textpile-{version}-source.zip`
-2. Adds footer link: "Download source zip from this instance"
+2. Adds footer link: "Download source code from this instance"
 3. Zip includes all git-tracked files (excludes node_modules, .git, etc.)
 
 **Build requirement:**
@@ -362,7 +362,7 @@ ls public/assets/ 2>/dev/null || echo "Assets dir doesn't exist (expected)"
    - Should show: "This site runs Textpile {version} · GitHub repo"
 
 2. **Load homepage with PUBLIC_SOURCE_ZIP=true**
-   - Should show: "This site runs Textpile {version} · GitHub repo · Download source zip from this instance\nTextpile is open source, you can run your own site for free."
+   - Should show: "This site runs Textpile {version} · GitHub repo · Download source code from this instance\nTextpile is open source, you can run your own site for free."
 
 3. **Load homepage with SOFTWARE_NAME="MyPaste"**
    - Should show: "This site runs MyPaste {version} · GitHub repo"
@@ -438,7 +438,7 @@ We deliberately chose NOT to implement robots.txt or X-Robots-Tag headers to blo
 We don't gitignore `public/assets/` because the zip is only created during Cloudflare Pages build, not locally. Local builds won't create it unless explicitly testing.
 
 ### 8. Link Text Change
-Change "source" → "GitHub repo" to clarify that it links to the official repository, not this specific instance's source. The new "Download source zip from this instance" link provides instance-specific source.
+Change "source" → "GitHub repo" to clarify that it links to the official repository, not this specific instance's source. The new "Download source code from this instance" link provides instance-specific source.
 
 ---
 
@@ -451,7 +451,7 @@ When this feature ships, add to CHANGELOG.md:
 - Optional public source zip download feature (opt-in via `PUBLIC_SOURCE_ZIP` environment variable)
   - Automatically generates source code zip during Cloudflare Pages builds when enabled
   - Uses `git archive` to include all tracked files (excludes node_modules, .git, etc.)
-  - Adds footer link "Download source zip from this instance" when enabled
+  - Adds footer link "Download source code from this instance" when enabled
   - Build script: `scripts/build-source-zip.sh`
   - Output: `/assets/textpile-{version}-source.zip`
 - `SOFTWARE_NAME` environment variable for easy fork rebranding

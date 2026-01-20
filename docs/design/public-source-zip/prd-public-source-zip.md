@@ -64,13 +64,13 @@ Leave it unset everywhere else.
 
 You want:
 
-> This site runs Textpile 0.11.1 · [GitHub repo](https://github.com/peterkaminski/textpile) · [Download source zip from this instance](/assets/textpile-0.11.1-source.zip)
+> This site runs Textpile 0.11.1 · [GitHub repo](https://github.com/peterkaminski/textpile) · [Download source code from this instance](/assets/textpile-0.11.1-source.zip)
 
 (Use HTML for the footer, not the markdown examples.)
 
 "GitHub repo" replaces the previous link label, "source".
 
-"Download source zip from this instance" is a link to the generated source code zip file.
+"Download source code from this instance" is a link to the generated source code zip file.
 
 Implementation pattern:
 
