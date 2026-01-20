@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-01-20
+
+### Added
+- **Admin Environment Configuration Display**
+  - Added `SOFTWARE_NAME` to admin environment variables display (Identity & Branding category)
+  - Added `PUBLIC_SOURCE_ZIP` to admin environment variables display (new Build & Deployment category)
+  - Admin dashboard now shows all configurable environment variables
+
+### Fixed
+- Updated ROUTES.md documentation with missing routes (`/404`, `/api/admin/env`)
+
 ## [1.0.0] - 2026-01-20
 
 ### 🎉 Stable Release
