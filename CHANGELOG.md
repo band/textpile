@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-02-09
+
+### Added
+- Optional Markdown preview workflow on the add-post page
+  - New `Edit` and `Preview` tabs above the body editor
+  - Live Markdown rendering in preview mode
+  - Markdown parser is loaded lazily when preview is first opened
+- Markdown preview implementation plan document:
+  - `docs/design/markdown-preview/plan-add-post-markdown-preview.md`
+
+### Changed
+- Refined add-post editor UI styling
+  - Soft rounded folder-tab appearance for `Edit`/`Preview`
+  - Improved tab alignment and visual hierarchy
+  - Preview pane styling refinements and working resize handle behavior
+- Updated author documentation to reference the new Preview tab flow
+
+### Internal
+- Updated local Claude permissions/settings configuration:
+  - `.claude/settings.local.json`
+
 ## [1.0.2] - 2026-01-20
 
 ### Improved
