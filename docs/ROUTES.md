@@ -18,6 +18,7 @@ These are served directly from the `/public` directory:
 - **`/admin` (admin.html)** - Admin dashboard for managing posts (requires ADMIN_TOKEN)
 - **`/test-date-formatter` (test-date-formatter.html)** - Testing page for date formatting utilities
 - **`/404` (404.html)** - Custom 404 error page with smart source zip detection
+- **`/robots.txt` (robots.txt)** - Crawler policy and sitemap discovery hint
 
 ### API Routes
 
@@ -175,9 +176,10 @@ All admin routes require authentication via `Authorization: Bearer <ADMIN_TOKEN>
 - **Features**:
   - Retrieves post content and metadata from KV
   - Checks if post has expired (returns 410 Gone if expired)
-  - Renders post with Markdown formatting (client-side using marked.js)
+  - Renders post with Markdown formatting server-side (progressive enhancement)
   - Provides toggle between formatted and plain text view
   - Includes copy text and copy URL buttons
+  - Supports content negotiation (`Accept: text/markdown` and `Accept: text/plain`)
   - Uses configurable date/time formatting
 
 #### **GET `/feed.xml`**
@@ -191,6 +193,17 @@ All admin routes require authentication via `Authorization: Bearer <ADMIN_TOKEN>
   - Includes title, link, GUID, publication date
   - Cache: 5 minutes
 
+#### **GET `/sitemap.xml`**
+- **File**: `functions/sitemap.xml.js`
+- **Purpose**: Dynamic sitemap of active posts
+- **Authentication**: None
+- **Response**: XML sitemap
+- **Features**:
+  - Includes homepage and about page
+  - Includes active (non-expired) posts
+  - Uses pinned status to adjust URL priority
+  - Cache: 1 hour
+
 ---
 
 ## Route Summary Table
@@ -202,6 +215,7 @@ All admin routes require authentication via `Authorization: Bearer <ADMIN_TOKEN>
 | `/add` | GET | Static | No | Add post form |
 | `/admin` | GET | Static | Yes (client-side) | Admin dashboard |
 | `/404` | GET | Static | No | Custom 404 page |
+| `/robots.txt` | GET | Static | No | Crawler policy and sitemap hint |
 | `/api` | GET | API | No | Get post index |
 | `/api/add` | POST | API | Optional | Add new post |
 | `/api/remove` | POST | API | Yes | Remove a post |
@@ -215,6 +229,7 @@ All admin routes require authentication via `Authorization: Bearer <ADMIN_TOKEN>
 | `/api/admin/env` | GET | API | Yes | Get environment config |
 | `/p/[id]` | GET | Dynamic | No | View specific post |
 | `/feed.xml` | GET | Dynamic | No | RSS feed |
+| `/sitemap.xml` | GET | Dynamic | No | XML sitemap for active posts |
 
 ---
 
