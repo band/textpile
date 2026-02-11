@@ -106,6 +106,16 @@ Individual posts (`/p/:id`) display:
 - Great for saving your own posts, sharing content, or creating references
 - **Remember**: Always keep your own copies! Textpile doesn't back up content.
 
+**Request Raw Markdown or Plain Text:**
+- Textpile supports content negotiation on post URLs.
+- To fetch markdown directly:
+  - `curl -H "Accept: text/markdown" https://YOURDOMAIN/p/POST_ID`
+- To fetch plain text directly:
+  - `curl -H "Accept: text/plain" https://YOURDOMAIN/p/POST_ID`
+- Query param alternative:
+  - `https://YOURDOMAIN/p/POST_ID?format=markdown`
+  - `https://YOURDOMAIN/p/POST_ID?format=text`
+
 ### Expired Content
 
 If you visit a URL for an expired post, you'll see:

@@ -10,57 +10,99 @@
     <link rel="alternate" type="application/rss+xml" title="Textpile RSS Feed" href="/feed.xml" />
   </head>
   <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <header>
       <a id="instance-name" class="instance-name" href="/">Textpile</a>
-      <div class="actions">
+      <nav class="actions" aria-label="Site navigation">
         <a href="/about">About</a>
         <span class="separator" aria-hidden="true">&middot;</span>
         <a href="/add">Add Post</a>
         <span class="separator" aria-hidden="true">&middot;</span>
         <a href="/feed.xml" title="RSS Feed">RSS</a>
-      </div>
+      </nav>
     </header>
 
-    <h1>Posts</h1>
+    <main id="main-content">
+      <h1>Posts</h1>
 
-    <p class="small">
-      Long-form posts for <span id="community-name">the community</span>.<br>
-      Posts expire automatically; authors keep their own records.<br>
-      <a href="/about">Important use notes →</a>
-    </p>
+      <p class="small">
+        Long-form posts for <span id="community-name">the community</span>.<br>
+        Posts expire automatically; authors keep their own records.<br>
+        <a href="/about">Important use notes →</a>
+      </p>
 
-    <div id="status" class="small">Loading…</div>
-    <div id="list"></div>
+      <noscript>
+        <article class="card">
+          <h2>JavaScript required for index listing</h2>
+          <p>The post list loads from <code>/api/index</code> in your browser.</p>
+          <p>You can still read posts directly if you have a post URL.</p>
+        </article>
+      </noscript>
+
+      <div id="status" class="small" role="status" aria-live="polite">Loading…</div>
+      <section id="list" aria-label="Post list"></section>
+    </main>
 
     <script type="module">
       import { initPage, formatDateTime, formatDate } from '/textpile-utils.js';
 
-      const status = document.getElementById("status");
-      const list = document.getElementById("list");
+      const status = document.getElementById('status');
+      const list = document.getElementById('list');
 
       function escapeHtml(s) {
-        return s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+        return String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
       }
 
       function formatExpiration(expiresAt) {
-        if (!expiresAt) return "";
+        if (!expiresAt) return null;
 
         const expiryDate = new Date(expiresAt);
         const now = new Date();
         const msRemaining = expiryDate.getTime() - now.getTime();
         const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
 
-        if (daysRemaining <= 0) return "";
+        if (daysRemaining <= 0) return null;
 
         const formattedDate = formatDate(expiresAt);
-        return ` · Expires ${formattedDate} (${daysRemaining} day${daysRemaining === 1 ? '' : 's'})`;
+        return {
+          formattedDate,
+          daysRemaining,
+        };
+      }
+
+      function renderPostCard(item) {
+        const postTitle = item.title ? escapeHtml(item.title) : '(untitled)';
+        const createdText = item.createdAt ? formatDateTime(item.createdAt) : 'Unknown';
+        const createdTime = item.createdAt ? `<time datetime="${escapeHtml(item.createdAt)}">${escapeHtml(createdText)}</time>` : escapeHtml(createdText);
+        const expiration = formatExpiration(item.expiresAt);
+        const url = item.url ? escapeHtml(item.url) : '#';
+        const postId = item.id ? escapeHtml(item.id) : '';
+        const pinBadge = item.pinned ? '<span class="pin-indicator" aria-label="Pinned post" title="Pinned">📌</span>' : '';
+
+        const expiresHtml = expiration
+          ? `<dt>Expires</dt><dd><time datetime="${escapeHtml(item.expiresAt)}">${escapeHtml(expiration.formattedDate)} (${expiration.daysRemaining} day${expiration.daysRemaining === 1 ? '' : 's'})</time></dd>`
+          : '';
+
+        return `
+          <article class="card post-card" data-pinned="${item.pinned ? 'true' : 'false'}">
+            <h2 class="post-title"><a href="${url}">${postTitle}</a> ${pinBadge}</h2>
+            <dl class="meta post-meta-list compact">
+              <dt>Created</dt>
+              <dd>${createdTime}</dd>
+              ${expiresHtml}
+              <dt>ID</dt>
+              <dd>${postId}</dd>
+            </dl>
+          </article>
+        `;
       }
 
       // Initialize page (load config, apply community name, update page title, add footer)
-      await initPage({ pageTitle: "Posts" });
+      await initPage({ pageTitle: 'Posts' });
 
       try {
-        const res = await fetch("/api/index", { headers: { "accept": "application/json" }});
+        const res = await fetch('/api/index', { headers: { accept: 'application/json' }});
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(errorData.message || errorData.error || `Index fetch failed: ${res.status}`);
@@ -68,30 +110,17 @@
         const data = await res.json();
 
         const items = Array.isArray(data.items) ? data.items : [];
-        status.textContent = items.length ? `${items.length} posts` : "No posts yet.";
+        status.textContent = items.length ? `${items.length} posts` : 'No posts yet.';
 
-        list.innerHTML = items.map(it => {
-          const title = it.title ? escapeHtml(it.title) : "(untitled)";
-          const created = it.createdAt ? formatDateTime(it.createdAt) : "";
-          const expires = formatExpiration(it.expiresAt);
-          const url = it.url ? escapeHtml(it.url) : "#";
-          const pinIcon = it.pinned ? '📌 ' : '';
-          return `
-            <div class="card">
-              <div><a href="${url}">${pinIcon}${title}</a></div>
-              <div class="meta">Created ${escapeHtml(created)}${expires} · ${escapeHtml(it.id)}</div>
-            </div>
-          `;
-        }).join("");
+        list.innerHTML = items.map(renderPostCard).join('');
       } catch (err) {
-        console.error("Failed to load posts:", err);
-        status.textContent = "Failed to load posts.";
-        
-        // Show helpful error message
+        console.error('Failed to load posts:', err);
+        status.textContent = 'Failed to load posts.';
+
         const errorMsg = String(err.message || err);
-        if (errorMsg.includes("KV namespace not configured")) {
+        if (errorMsg.includes('KV namespace not configured')) {
           list.innerHTML = `
-            <div class="card">
+            <article class="card">
               <h2>⚠️ Configuration Required</h2>
               <p><strong>KV namespace is not configured.</strong></p>
               <p>To use Textpile, you need to configure a KV namespace binding in Cloudflare Pages:</p>
@@ -103,19 +132,19 @@
                 <li>Select or create a KV namespace</li>
                 <li>Redeploy your site</li>
               </ol>
-              <p>See the <a href="https://developers.cloudflare.com/pages/functions/bindings/#kv-namespaces" target="_blank">Cloudflare documentation</a> for more details.</p>
-            </div>
+              <p>See the <a href="https://developers.cloudflare.com/pages/functions/bindings/#kv-namespaces" target="_blank" rel="noopener noreferrer">Cloudflare documentation</a> for more details.</p>
+            </article>
           `;
         } else {
           list.innerHTML = `
-            <div class="card">
+            <article class="card">
               <h2>Error Loading Posts</h2>
               <p>${escapeHtml(errorMsg)}</p>
               <details>
                 <summary>Technical Details</summary>
                 <pre>${escapeHtml(String(err?.stack || err))}</pre>
               </details>
-            </div>
+            </article>
           `;
         }
       }
